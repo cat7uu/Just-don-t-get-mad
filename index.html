@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Just Don't Get Mad</title>
 <style>
   * { box-sizing: border-box; }
@@ -11,6 +11,11 @@
     font-family: "Trebuchet MS", Arial, sans-serif;
     background: linear-gradient(#8fd3ff, #e8f7ff);
     min-height: 100vh;
+    min-height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    touch-action: manipulation;          /* no double-tap zoom */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -36,7 +41,7 @@
   /* Stage */
   .stage {
     position: relative;
-    width: min(90vw, 520px); height: 280px;
+    width: min(90vw, 520px); height: clamp(190px, 36dvh, 280px);
     margin: 14px 0;
     background: #fff8e6; border: 3px solid #222; border-radius: 16px;
     overflow: hidden;
@@ -44,7 +49,7 @@
   .face {
     position: absolute; left: 50%; bottom: 20px;
     transform: translateX(-50%);
-    font-size: 96px; transition: transform .3s;
+    font-size: clamp(64px, 18vw, 96px); transition: transform .3s;
   }
   .face.spin { animation: spin 1s linear 2; }
   @keyframes spin { to { transform: translateX(-50%) rotate(360deg); } }
@@ -83,9 +88,9 @@
   .warning { color: #c00; }
 
   /* Buttons */
-  .controls { display: flex; gap: 30px; align-items: center; }
+  .controls { display: flex; gap: clamp(20px, 8vw, 30px); align-items: center; }
   .big {
-    width: 130px; height: 130px; border-radius: 50%;
+    width: clamp(110px, 32vw, 130px); height: clamp(110px, 32vw, 130px); border-radius: 50%;
     border: 5px solid #222; font-size: 1.4rem; font-weight: bold;
     color: #fff; cursor: pointer; text-shadow: 1px 1px 2px #000;
     box-shadow: 0 8px #222; transition: transform .05s, box-shadow .05s;
@@ -93,6 +98,17 @@
   .big:active { transform: translateY(6px); box-shadow: 0 2px #222; }
   .red { background: radial-gradient(circle at 35% 35%, #ff7a7a, #d10000); }
   .green { background: radial-gradient(circle at 35% 35%, #7dff9a, #0a9a2c); }
+  .big.pressed { transform: translateY(6px); box-shadow: 0 2px #222; }
+  .lookup { min-height: 48px; }
+  .panel li { min-height: 44px; align-items: center; }
+  @media (max-width: 600px) {
+    h1 { margin-top: 10px; font-size: 1.6rem; }
+    .sub { margin-bottom: 8px; font-size: .95rem; }
+    .stage { margin: 10px 0; }
+    .message { font-size: 1rem; }
+    .projectile { font-size: 44px; }
+    .lookup { margin-top: 16px; }
+  }
   .big:disabled { filter: grayscale(.8); cursor: not-allowed; }
 
   .lookup {
@@ -291,15 +307,30 @@
 
   const random = list => list[Math.floor(Math.random() * list.length)];
 
-  $("redBtn").onclick = () => doRed(random(RED_ACTIONS));
-  $("greenBtn").onclick = () => {
-    // If a weapon is falling, STOP always shoots it down.
-    doGreen(incoming ? GREEN_ACTIONS[0] : random(GREEN_ACTIONS));
-  };
+  // Fire on pointerdown so taps feel instant on phones.
+  function press(btn, fn) {
+    btn.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      btn.classList.add("pressed");
+      if (navigator.vibrate) navigator.vibrate(30);
+      fn();
+    });
+    const up = () => btn.classList.remove("pressed");
+    btn.addEventListener("pointerup", up);
+    btn.addEventListener("pointerleave", up);
+    btn.addEventListener("pointercancel", up);
+    btn.addEventListener("contextmenu", e => e.preventDefault());
+    // Keyboard (Enter/Space) still works through click with no pointer.
+    btn.addEventListener("click", e => { if (e.detail === 0) fn(); });
+  }
+  press($("redBtn"), () => doRed(random(RED_ACTIONS)));
+  // If a weapon is falling, STOP always shoots it down.
+  press($("greenBtn"), () => doGreen(incoming ? GREEN_ACTIONS[0] : random(GREEN_ACTIONS)));
 
   $("lookupBtn").onclick = () => {
     const open = $("panel").classList.toggle("open");
     $("lookupBtn").textContent = open ? "🔼 Hide Actions" : "🔍 Look Up Actions";
+    if (open) $("panel").scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   function fillList(ul, actions, handler) {
