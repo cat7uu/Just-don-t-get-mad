@@ -321,6 +321,68 @@
     cursor: pointer; opacity: 0; transition: opacity 1.5s;
   }
   .escape button.show { opacity: 1; }
+
+  /* ---------- Secret: The Blue Hill ---------- */
+  .hill-btn {
+    position: absolute; top: 10px; right: 10px; z-index: 6;
+    min-height: 44px; padding: 8px 14px; display: none;
+    border: 3px solid #12325e; border-radius: 12px;
+    background: linear-gradient(#4f93e0, #2f6fd0); color: #fff;
+    font-family: inherit; font-size: .95rem; font-weight: bold;
+    text-shadow: 0 1px 2px #12325e; cursor: pointer;
+  }
+  .hill-btn.show { display: block; animation: hillPulse .9s ease-in-out infinite alternate; }
+  @keyframes hillPulse {
+    from { box-shadow: 0 0 8px #6fb4ff;  filter: brightness(1); }
+    to   { box-shadow: 0 0 30px #d8efff; filter: brightness(1.18); }
+  }
+
+  .bluehill {
+    position: fixed; inset: 0; z-index: 55; display: none; overflow: hidden;
+    flex-direction: column; align-items: center; justify-content: flex-end;
+    background: linear-gradient(#d4ecff 0%, #8fc4f0 45%, #5b9bd5 100%);
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .bluehill.show { display: flex; animation: bhIn 2.2s ease-out; }
+  @keyframes bhIn { from { opacity: 0; filter: blur(16px); } }
+  .bh-sun { position: absolute; top: 9%; right: 14%; font-size: clamp(38px, 12vw, 58px); }
+  .bh-cloud { position: absolute; font-size: clamp(26px, 8vw, 40px); opacity: .85; }
+  .bh-cloud.a { top: 14%; left: 8%; animation: drift 14s linear infinite; }
+  .bh-cloud.b { top: 24%; left: 55%; animation: drift 20s linear infinite reverse; }
+  @keyframes drift { to { transform: translateX(22vw); } }
+  .bh-hill {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    border-radius: 50% 50% 0 0 / 72% 72% 0 0;
+  }
+  .bh-hill.back { bottom: 26%; width: 150%; height: 26%; background: #7fb0e0; }
+  .bh-hill.front { bottom: 0; width: 190%; height: 44%; background: linear-gradient(#5f93d8, #26497c); }
+  .bh-family {
+    position: absolute; bottom: 38%; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: flex-end; gap: clamp(1px, 1.5vw, 12px);
+    font-size: clamp(30px, 10vw, 52px); white-space: nowrap;
+  }
+  .bh-family .you { font-size: 1.3em; animation: float 3s ease-in-out infinite; }
+  .bh-dialog {
+    position: relative; z-index: 2; width: min(92vw, 560px);
+    background: rgba(255,255,255,.94); border: 3px solid #12325e; border-radius: 16px;
+    padding: 14px 16px; text-align: center;
+  }
+  .bh-dialog.fade { animation: bhFade .5s; }
+  @keyframes bhFade { from { opacity: 0; transform: translateY(8px); } }
+  .bh-who { margin: 0 0 6px; font-size: .9rem; font-weight: bold; color: #2f6fd0; letter-spacing: 1px; }
+  .bh-zh {
+    margin: 0; line-height: 1.45; color: #10233f;
+    font-size: clamp(1.25rem, 5.5vw, 1.6rem);
+    font-family: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB",
+                 "Microsoft YaHei", "WenQuanYi Zen Hei", sans-serif;
+  }
+  .bh-en { margin: 7px 0 0; font-style: italic; color: #44607f; font-size: clamp(.95rem, 4vw, 1.05rem); }
+  .bh-next {
+    margin: 12px 0 16px; min-height: 48px; padding: 10px 24px;
+    font-family: inherit; font-size: 1.05rem; font-weight: bold;
+    border: 3px solid #12325e; border-radius: 12px;
+    background: #fff; color: #12325e; cursor: pointer; z-index: 2;
+  }
 </style>
 </head>
 <body>
@@ -373,6 +435,7 @@
     </div>
     <div class="run-field" id="runField">
       <canvas id="runCanvas"></canvas>
+      <button class="hill-btn" id="hillBtn">🔵 The Blue Hill</button>
       <div class="run-card" id="runCard">
         <h3>😄 He's TOO happy.</h3>
         <p>Something is wrong. Run, and don't fall.</p>
@@ -393,6 +456,23 @@
         <button class="down" data-dir="down" aria-label="Slide">▼</button>
       </div>
     </div>
+  </div>
+
+  <div class="bluehill" id="bluehill">
+    <div class="bh-sun">🌤️</div>
+    <div class="bh-cloud a">☁️</div>
+    <div class="bh-cloud b">☁️</div>
+    <div class="bh-hill back"></div>
+    <div class="bh-hill front"></div>
+    <div class="bh-family">
+      <span>👵</span><span>👨</span><span class="you">🙂</span><span>👩</span><span>🧒</span>
+    </div>
+    <div class="bh-dialog" id="bhDialog">
+      <p class="bh-who" id="bhWho"></p>
+      <p class="bh-zh" id="bhZh"></p>
+      <p class="bh-en" id="bhEn"></p>
+    </div>
+    <button class="bh-next" id="bhNext">下一句 · Next</button>
   </div>
 
   <div class="godtier" id="godtier">
@@ -727,6 +807,7 @@
     hideRunner();
     $("godtier").classList.remove("show");
     $("godText").classList.remove("show");
+    $("bluehill").classList.remove("show");
     $("escape").classList.remove("show");
     $("escapeText").classList.remove("show");
     $("escapeBtn").classList.remove("show");
@@ -819,7 +900,13 @@
     run.t = 3;
     run.last = performance.now();
     run.raf = requestAnimationFrame(tick);
+    // A secret way out appears in the corner, but only for 10 seconds.
+    run.timers = [
+      setTimeout(() => $("hillBtn").classList.add("show"), HILL_APPEARS),
+      setTimeout(() => $("hillBtn").classList.remove("show"), HILL_APPEARS + HILL_WINDOW),
+    ];
   };
+  $("hillBtn").onclick = () => { if (run) enterBlueHill(); };
 
   function control(dir) {
     if (!run || (run.state !== "running" && run.state !== "countdown")) return;
@@ -1017,12 +1104,65 @@
   }
 
   function hideRunner() {
-    if (run) cancelAnimationFrame(run.raf);
+    if (run) {
+      cancelAnimationFrame(run.raf);
+      (run.timers || []).forEach(clearTimeout);
+    }
     run = null;
+    $("hillBtn").classList.remove("show");
     $("runner").classList.remove("show");
     $("runProg").style.width = "0";
     $("runHint").innerHTML = "Reach the end to escape.<br>Fall, and he gets mad.";
   }
+
+  // ---------- The Blue Hill: a secret way out of the course ----------
+  const HILL_APPEARS = 4000, HILL_WINDOW = 10000;
+  const BLUE_HILL = [
+    { who: "妈妈 · Mom",           zh: "你回来了。",
+      en: "You came back." },
+    { who: "爸爸 · Dad",           zh: "我们一直在这座蓝色的山上等你。",
+      en: "We have been waiting for you on this blue hill." },
+    { who: "妹妹 · Little Sister", zh: "哥哥，你看，山是蓝色的。",
+      en: "Big brother, look \u2014 the hill is blue." },
+    { who: "他 · Him",             zh: "我不想再按那些按钮了。",
+      en: "I don't want to press those buttons anymore." },
+    { who: "奶奶 · Grandma",       zh: "你不必再假装快乐了。",
+      en: "You don't have to pretend to be happy anymore." },
+    { who: "妈妈 · Mom",           zh: "留下来吧。风很轻，天很蓝。",
+      en: "Stay. The wind is soft, and the sky is blue." },
+  ];
+  let hillStep = 0;
+
+  function enterBlueHill() {
+    hideRunner();
+    locked = true;
+    hillStep = 0;
+    $("bluehill").classList.add("show");
+    showHillLine();
+  }
+
+  function showHillLine() {
+    const line = BLUE_HILL[hillStep];
+    if (line) {
+      $("bhWho").textContent = line.who;
+      $("bhZh").textContent = line.zh;
+      $("bhEn").textContent = line.en;
+      $("bhNext").textContent = "下一句 · Next";
+    } else {
+      $("bhWho").textContent = "";
+      $("bhZh").textContent = "你留在了蓝色的山上。";
+      $("bhEn").textContent = "You stayed on the blue hill.";
+      $("bhNext").textContent = "再玩一次 · Play Again";
+    }
+    const d = $("bhDialog");
+    d.classList.remove("fade"); void d.offsetWidth; d.classList.add("fade");
+  }
+
+  $("bhNext").onclick = () => {
+    if (hillStep >= BLUE_HILL.length) return reset();
+    hillStep++;
+    showHillLine();
+  };
 
   // ---------- Made it: God tier, close your eyes, escape ----------
   function reachGodTier() {
