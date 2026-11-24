@@ -151,14 +151,103 @@
     margin-top: 10px; padding: 10px 22px; font-size: 1.1rem;
     border-radius: 12px; border: 3px solid #222; background: #8fd3ff; cursor: pointer;
   }
+
+  /* ---------- Scary lines in the normal game ---------- */
+  .message.scary {
+    color: #8b0000; letter-spacing: .5px;
+    animation: glitch .25s steps(2) 4;
+  }
+  @keyframes glitch {
+    0% { transform: translate(2px, -1px); opacity: .7; }
+    50% { transform: translate(-2px, 1px); opacity: 1; }
+    100% { transform: translate(0, 0); }
+  }
+  .face.creepy { filter: contrast(1.6) saturate(0) brightness(.8); }
+  .stage.flicker { animation: flicker .9s; }
+  @keyframes flicker {
+    0%, 20%, 40%, 100% { background: #fff8e6; }
+    10%, 30% { background: #2a0000; }
+  }
+
+  /* ---------- Getting him mad: blackout + eyes opening ---------- */
+  #game { transition: filter 2.5s ease-out; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  #game.blurred { filter: blur(10px) brightness(.4); transition: none; }
+  .blackout {
+    position: fixed; inset: 0; background: #000; z-index: 50;
+    opacity: 0; pointer-events: none; transition: opacity 1.6s ease-in;
+    display: flex; align-items: center; justify-content: center;
+    color: #7a0000; font-size: 1.3rem; letter-spacing: 3px; text-align: center; padding: 20px;
+  }
+  .blackout.on { opacity: 1; pointer-events: auto; }
+  .blackout span { opacity: 0; transition: opacity 1.2s; }
+  .blackout span.show { opacity: 1; }
+  .lid {
+    position: fixed; left: -10%; width: 120%; height: 52%;
+    background: #000; z-index: 49; display: none;
+  }
+  .lid.top    { top: 0;    border-radius: 0 0 50% 50% / 0 0 60px 60px; }
+  .lid.bottom { bottom: 0; border-radius: 50% 50% 0 0 / 60px 60px 0 0; }
+  .lids-on .lid { display: block; }
+  .lids-open .lid.top    { animation: lidTop 3.2s ease-in-out forwards; }
+  .lids-open .lid.bottom { animation: lidBottom 3.2s ease-in-out forwards; }
+  @keyframes lidTop {
+    0% { transform: translateY(0); }
+    25% { transform: translateY(-35%); }
+    40% { transform: translateY(0); }
+    60% { transform: translateY(-55%); }
+    70% { transform: translateY(-15%); }
+    100% { transform: translateY(-105%); }
+  }
+  @keyframes lidBottom {
+    0% { transform: translateY(0); }
+    25% { transform: translateY(35%); }
+    40% { transform: translateY(0); }
+    60% { transform: translateY(55%); }
+    70% { transform: translateY(15%); }
+    100% { transform: translateY(105%); }
+  }
+
+  /* ---------- The dark world ---------- */
+  body.nightmare { background: radial-gradient(#1a0505, #000 70%); color: #ddd; }
+  .nightmare h1 { color: #b30000; text-shadow: 0 0 8px #ff0000; }
+  .nightmare .sub, .nightmare .hint { color: #999; }
+  .nightmare .meter { background: #111; border-color: #500; }
+  .nightmare .meter-fill { background: linear-gradient(90deg, #7a0000, #ff2a2a); background-size: 100% 100%; }
+  .nightmare .stage.flicker { animation: flickerDark .9s; }
+  @keyframes flickerDark {
+    0%, 20%, 40%, 100% { background: #0d0303; }
+    10%, 30% { background: #4a0000; }
+  }
+  .nightmare .stage { background: #0d0303; border-color: #500; box-shadow: 0 0 30px #300 inset; }
+  .nightmare .message { color: #e6c0c0; }
+  .nightmare .face { animation: stare 3s infinite; text-shadow: 0 0 25px #f00; }
+  @keyframes stare {
+    0%, 92%, 100% { transform: translateX(-50%); }
+    94% { transform: translateX(-52%) scale(1.05); }
+    96% { transform: translateX(-48%) scale(1.05); }
+  }
+  .nightmare .big { font-size: 1rem; line-height: 1.15; padding: 8px; border-color: #000; box-shadow: 0 8px #000; }
+  .nightmare .red { background: radial-gradient(circle at 35% 35%, #8a1010, #2a0000); }
+  .nightmare .green { background: radial-gradient(circle at 35% 35%, #5a8a3a, #10250a); }
+  .nightmare .lookup { background: #2a0000; color: #e6c0c0; border-color: #500; }
+  .nightmare .panel { background: #0d0303; border-color: #500; }
+  .nightmare .panel .redlist li { background: #2a0000; }
+  .nightmare .panel .greenlist li { background: #10250a; }
+  .nightmare .panel li:hover { outline-color: #b30000; }
+  .nightmare .over .box { background: #0d0303; border-color: #500; color: #e6c0c0; }
+  .nightmare .over button { background: #2a0000; color: #e6c0c0; border-color: #500; }
+  @media (prefers-reduced-motion: reduce) {
+    .message.scary, .stage.flicker, .nightmare .face { animation: none; }
+  }
 </style>
 </head>
 <body>
-  <h1>Just Don't Get Mad</h1>
-  <p class="sub">🔴 Red = SHOOT &nbsp; | &nbsp; 🟢 Green = STOP</p>
+<main id="game">
+  <h1 id="title">Just Don't Get Mad</h1>
+  <p class="sub" id="sub">🔴 Red = SHOOT &nbsp; | &nbsp; 🟢 Green = STOP</p>
 
   <div class="meter-wrap">
-    <div class="meter-label"><span>😡 Mad</span><span id="moodText">Mood: 50</span><span>😄 Happy</span></div>
+    <div class="meter-label"><span id="meterLeft">😡 Mad</span><span id="moodText">Mood: 50</span><span id="meterRight">😄 Happy</span></div>
     <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
   </div>
 
@@ -175,13 +264,17 @@
   <button class="lookup" id="lookupBtn">🔍 Look Up Actions</button>
 
   <div class="panel" id="panel">
-    <h3>🔴 Red Button (Shoot)</h3>
+    <h3 id="redHead"></h3>
     <ul class="redlist" id="redList"></ul>
-    <h3>🟢 Green Button (Stop)</h3>
+    <h3 id="greenHead"></h3>
     <ul class="greenlist" id="greenList"></ul>
-    <p class="hint">Tap an action to do it. The big buttons pick one at random.
-      If a weapon is falling, the green button always shoots it down!</p>
+    <p class="hint" id="hint"></p>
   </div>
+</main>
+
+  <div class="lid top"></div>
+  <div class="lid bottom"></div>
+  <div class="blackout" id="blackout"><span id="blackoutText">you made him mad.</span></div>
 
   <div class="over" id="over">
     <div class="box">
@@ -192,6 +285,8 @@
   </div>
 
 <script>
+{
+  // ---------- Normal game ----------
   const RED_ACTIONS = [
     { name: "Nuclear Bomb",            icon: "☢️", mood: -30, weapon: true,  text: "A nuclear bomb is falling! STOP it!" },
     { name: "Chemical Weapon",         icon: "🧪", mood: -25, weapon: true,  text: "A chemical weapon is falling! STOP it!" },
@@ -205,10 +300,34 @@
     { name: "Go to the Doctor",   icon: "🩺", mood: 10, anim: "bounce", text: "The doctor says you're healthy!" },
     { name: "Be Happy",           icon: "😄", mood: 15, anim: "bounce", text: "You chose to be happy! 🎉" },
   ];
+  // Sometimes he says one of these instead of his normal line.
+  const SCARY_LINES = [
+    "I can see you through the screen.",
+    "Why do you keep pressing me?",
+    "Don't look behind you.",
+    "I remember every button you pressed.",
+    "It's so dark in here.",
+    "You'll stay with me, won't you?",
+    "Keep smiling. Keep smiling. Keep smiling.",
+    "What happens if I get mad?",
+    "I'm not the one inside the screen.",
+  ];
+  const SCARY_CHANCE = 0.15;
+
+  // ---------- After he gets mad ----------
+  const SUFFER_ACTIONS = [
+    { name: "Feed Him Flesh", icon: "🥩", face: "😶", text: "He chews slowly. He stares at you. He wants more." },
+    { name: "Love Flesh",     icon: "🫀", face: "😑", text: "\"Flesh is all I love now,\" he whispers." },
+  ];
+  const SMILE_ACTIONS = [
+    { name: "Grapevines Forever",              icon: "🍇", face: "🙂", text: "Grapevines curl around your wrists. Forever. He smiles." },
+    { name: "Thank You So Much. I Love You.",  icon: "🖤", face: "😊", text: "\"Thank you so much. I love you,\" he says. He doesn't blink." },
+  ];
+  const STEPS_TO_END = 5;
 
   const $ = id => document.getElementById(id);
   const stage = $("stage"), face = $("face"), message = $("message");
-  let mood, incoming;
+  let mode, mood, incoming, locked, endSteps, smiles, suffers, scaryTimer;
 
   function faceFor(m) {
     if (m >= 85) return "😄";
@@ -223,13 +342,29 @@
     $("meterFill").style.width = mood + "%";
     $("moodText").textContent = "Mood: " + mood;
     face.textContent = faceFor(mood);
-    if (mood <= 0) endGame(false);
-    else if (mood >= 100) endGame(true);
+    if (mood <= 0) getMad();
+    else if (mood >= 100) showEnd("😄 You Win!", "You stayed calm and happy. Great job!", "Play Again");
   }
 
   function say(text, warn) {
     message.textContent = text;
     message.className = "message" + (warn ? " warning" : "");
+  }
+
+  // Normal line, or (sometimes) a scary one.
+  function sayLine(text) {
+    if (Math.random() < SCARY_CHANCE) {
+      message.textContent = random(SCARY_LINES);
+      message.className = "message";
+      void message.offsetWidth;
+      message.className = "message scary";
+      stage.classList.remove("flicker"); void stage.offsetWidth; stage.classList.add("flicker");
+      face.classList.add("creepy");
+      clearTimeout(scaryTimer);
+      scaryTimer = setTimeout(() => face.classList.remove("creepy"), 1500);
+    } else {
+      say(text);
+    }
   }
 
   function animate(name) {
@@ -274,21 +409,27 @@
     incoming.raf = requestAnimationFrame(step);
   }
 
+  function stopWeapon() {
+    if (incoming) { cancelAnimationFrame(incoming.raf); incoming.el.remove(); incoming = null; }
+  }
+
   function doRed(action) {
-    if (mood <= 0 || mood >= 100) return;
+    if (locked) return;
+    if (mode === "nightmare") return doDark(action, "suffer");
     if (action.weapon) {
       if (incoming) { say("A weapon is already falling! Press STOP!", true); return; }
       say(action.text, true);
       launchWeapon(action);
     } else {
-      say(action.icon + " " + action.text);
+      sayLine(action.icon + " " + action.text);
       animate(action.anim);
       setMood(action.mood);
     }
   }
 
   function doGreen(action) {
-    if (mood <= 0 || mood >= 100) return;
+    if (locked) return;
+    if (mode === "nightmare") return doDark(action, "smile");
     if (action.shootDown && incoming) {
       cancelAnimationFrame(incoming.raf);
       const el = incoming.el, name = incoming.action.name;
@@ -300,11 +441,85 @@
       setMood(20);
       return;
     }
-    say(action.icon + " " + action.text);
+    sayLine(action.icon + " " + action.text);
     animate(action.anim);
     setMood(action.mood);
   }
 
+  // ---------- He gets mad: go dark, then open the eyes ----------
+  function getMad() {
+    locked = true;
+    stopWeapon();
+    closePanel();
+    const black = $("blackout"), txt = $("blackoutText");
+    black.classList.add("on");
+    setTimeout(() => txt.classList.add("show"), 1700);
+    setTimeout(() => txt.classList.remove("show"), 3600);
+    setTimeout(() => {
+      enterNightmare();
+      // Swap the flat black for eyelids, then let them flutter open.
+      document.body.classList.add("lids-on");
+      $("game").classList.add("blurred");
+      black.style.transition = "none";
+      black.classList.remove("on");
+      void black.offsetWidth;
+      black.style.transition = "";
+      requestAnimationFrame(() => {
+        document.body.classList.add("lids-open");
+        $("game").classList.remove("blurred");
+      });
+    }, 4800);
+    setTimeout(() => {
+      document.body.classList.remove("lids-on", "lids-open");
+      locked = false;
+    }, 8100);
+  }
+
+  function enterNightmare() {
+    mode = "nightmare";
+    endSteps = 0; smiles = 0; suffers = 0;
+    document.body.classList.add("nightmare");
+    $("title").textContent = "He's Awake";
+    $("sub").textContent = "There is no stopping now. Only the end.";
+    $("meterLeft").textContent = "";
+    $("meterRight").textContent = "🕯️ The End";
+    $("redBtn").textContent = "SUFFER UNTIL THE END";
+    $("greenBtn").textContent = "SMILE UNTIL THE END";
+    face.className = "face";
+    face.textContent = "😐";
+    say("He opens his eyes. He is looking right at you.");
+    updateEndMeter();
+    renderLists();
+  }
+
+  function updateEndMeter() {
+    const pct = Math.round(endSteps / STEPS_TO_END * 100);
+    $("meterFill").style.width = pct + "%";
+    $("moodText").textContent = "Until the end: " + (STEPS_TO_END - endSteps);
+  }
+
+  function doDark(action, kind) {
+    if (kind === "smile") smiles++; else suffers++;
+    endSteps++;
+    face.textContent = action.face;
+    stage.classList.remove("flicker"); void stage.offsetWidth; stage.classList.add("flicker");
+    say(action.icon + " " + action.text);
+    updateEndMeter();
+    if (endSteps >= STEPS_TO_END) {
+      locked = true;
+      setTimeout(() => {
+        if (smiles >= suffers) {
+          showEnd("🙂 Smile Until the End",
+            "He smiles at you. You smile back. Neither of you can stop. Not ever.", "Wake Up");
+        } else {
+          showEnd("🩸 Suffer Until the End",
+            "He is full now. The room is quiet. He's still looking at you.", "Wake Up");
+        }
+      }, 1200);
+    }
+  }
+
+  // ---------- Buttons & lists ----------
   const random = list => list[Math.floor(Math.random() * list.length)];
 
   // Fire on pointerdown so taps feel instant on phones.
@@ -312,7 +527,7 @@
     btn.addEventListener("pointerdown", e => {
       e.preventDefault();
       btn.classList.add("pressed");
-      if (navigator.vibrate) navigator.vibrate(30);
+      if (navigator.vibrate) navigator.vibrate(mode === "nightmare" ? [60, 40, 60] : 30);
       fn();
     });
     const up = () => btn.classList.remove("pressed");
@@ -323,47 +538,89 @@
     // Keyboard (Enter/Space) still works through click with no pointer.
     btn.addEventListener("click", e => { if (e.detail === 0) fn(); });
   }
-  press($("redBtn"), () => doRed(random(RED_ACTIONS)));
+  press($("redBtn"), () =>
+    doRed(random(mode === "nightmare" ? SUFFER_ACTIONS : RED_ACTIONS)));
   // If a weapon is falling, STOP always shoots it down.
-  press($("greenBtn"), () => doGreen(incoming ? GREEN_ACTIONS[0] : random(GREEN_ACTIONS)));
+  press($("greenBtn"), () =>
+    doGreen(mode === "nightmare" ? random(SMILE_ACTIONS)
+      : incoming ? GREEN_ACTIONS[0] : random(GREEN_ACTIONS)));
 
+  function closePanel() {
+    $("panel").classList.remove("open");
+    $("lookupBtn").textContent = "🔍 Look Up Actions";
+  }
   $("lookupBtn").onclick = () => {
     const open = $("panel").classList.toggle("open");
     $("lookupBtn").textContent = open ? "🔼 Hide Actions" : "🔍 Look Up Actions";
     if (open) $("panel").scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  function fillList(ul, actions, handler) {
+  function fillList(ul, actions, handler, tag) {
+    ul.innerHTML = "";
     actions.forEach(a => {
       const li = document.createElement("li");
-      const sign = a.mood > 0 ? "+" : "";
-      li.innerHTML = `<span>${a.icon} ${a.name}</span><span>${sign}${a.mood}</span>`;
+      const left = document.createElement("span");
+      const right = document.createElement("span");
+      left.textContent = a.icon + " " + a.name;
+      right.textContent = tag || ((a.mood > 0 ? "+" : "") + a.mood);
+      li.append(left, right);
       li.onclick = () => handler(a);
       ul.appendChild(li);
     });
   }
-  fillList($("redList"), RED_ACTIONS, doRed);
-  fillList($("greenList"), GREEN_ACTIONS, doGreen);
 
-  function endGame(won) {
-    if (incoming) { cancelAnimationFrame(incoming.raf); incoming.el.remove(); incoming = null; }
-    $("overTitle").textContent = won ? "😄 You Win!" : "😡 You Got Mad!";
-    $("overText").textContent = won
-      ? "You stayed calm and happy. Great job!"
-      : "Your mood hit zero. Remember: just don't get mad!";
+  function renderLists() {
+    if (mode === "nightmare") {
+      $("redHead").textContent = "🔴 Suffer Until the End";
+      $("greenHead").textContent = "🟢 Smile Until the End";
+      $("hint").textContent = "Choose. He is waiting. " + STEPS_TO_END + " choices until the end.";
+      fillList($("redList"), SUFFER_ACTIONS, doRed, "suffer");
+      fillList($("greenList"), SMILE_ACTIONS, doGreen, "smile");
+    } else {
+      $("redHead").textContent = "🔴 Red Button (Shoot)";
+      $("greenHead").textContent = "🟢 Green Button (Stop)";
+      $("hint").textContent = "Tap an action to do it. The big buttons pick one at random. " +
+        "If a weapon is falling, the green button always shoots it down!";
+      fillList($("redList"), RED_ACTIONS, doRed);
+      fillList($("greenList"), GREEN_ACTIONS, doGreen);
+    }
+  }
+
+  function showEnd(title, text, button) {
+    locked = true;
+    stopWeapon();
+    $("overTitle").textContent = title;
+    $("overText").textContent = text;
+    $("restartBtn").textContent = button;
     $("over").classList.add("show");
   }
 
   function reset() {
+    mode = "normal";
     mood = 50;
     incoming = null;
+    locked = false;
+    document.body.classList.remove("nightmare", "lids-on", "lids-open");
     $("over").classList.remove("show");
+    $("blackout").classList.remove("on");
+    $("blackoutText").classList.remove("show");
+    $("title").textContent = "Just Don't Get Mad";
+    $("sub").innerHTML = "🔴 Red = SHOOT &nbsp; | &nbsp; 🟢 Green = STOP";
+    $("meterLeft").textContent = "😡 Mad";
+    $("meterRight").textContent = "😄 Happy";
+    $("redBtn").textContent = "SHOOT";
+    $("greenBtn").textContent = "STOP";
+    face.className = "face";
+    stage.classList.remove("flicker");
     stage.querySelectorAll(".projectile, .boom").forEach(e => e.remove());
+    closePanel();
+    renderLists();
     say("Press a button to start!");
     setMood(0);
   }
   $("restartBtn").onclick = reset;
   reset();
+}
 </script>
 </body>
 </html>
