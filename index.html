@@ -383,6 +383,118 @@
     border: 3px solid #12325e; border-radius: 12px;
     background: #fff; color: #12325e; cursor: pointer; z-index: 2;
   }
+
+  /* ---------- HELL ---------- */
+  .hell {
+    position: fixed; inset: 0; z-index: 58; display: none; overflow: hidden;
+    flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 118%, #ff7b00 0%, #c20000 28%, #4a0000 62%, #0a0000 100%);
+    color: #fff; text-align: center; padding: 24px 18px;
+  }
+  .hell.show { display: flex; }
+  .hell-glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at 50% 110%, rgba(255,150,0,.6), transparent 62%);
+    animation: hellGlow 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes hellGlow { to { opacity: .4; transform: scaleY(1.2); } }
+  .flames {
+    position: absolute; bottom: -12px; left: 0; right: 0; display: flex;
+    justify-content: space-around; pointer-events: none;
+    font-size: clamp(34px, 11vw, 58px);
+  }
+  .flames span { animation: flick .55s ease-in-out infinite alternate; }
+  .flames span:nth-child(2n) { animation-duration: .4s; animation-delay: .15s; }
+  .flames span:nth-child(3n) { animation-duration: .7s; animation-delay: .3s; }
+  @keyframes flick { to { transform: translateY(-14px) scale(1.15); opacity: .8; } }
+  .ember {
+    position: absolute; bottom: 10%; font-size: 14px; opacity: .8;
+    animation: rise 5s linear infinite; pointer-events: none;
+  }
+  @keyframes rise { to { transform: translateY(-70vh) translateX(20px); opacity: 0; } }
+  .hell-text { position: relative; z-index: 2; max-width: 620px; }
+  .hell-text p {
+    margin: 0 0 14px; color: #fff; opacity: 0; transition: opacity 1s;
+    font-size: clamp(1.15rem, 5.5vw, 1.6rem); line-height: 1.4;
+    text-shadow: 0 0 14px rgba(255,80,0,.9);
+  }
+  .hell-text p.show { opacity: 1; }
+  .hell-next {
+    position: relative; z-index: 2; margin-top: 16px; min-height: 48px; padding: 12px 26px;
+    font-family: inherit; font-size: 1.1rem; font-weight: bold; letter-spacing: 2px;
+    border: 3px solid #fff; border-radius: 12px; background: rgba(0,0,0,.4); color: #fff;
+    cursor: pointer; display: none;
+  }
+  .hell-next.show { display: block; animation: bhFade .8s; }
+
+  /* ---------- The battle ---------- */
+  .battle {
+    position: fixed; inset: 0; z-index: 57; display: none; flex-direction: column;
+    background: #080000; color: #fff;
+    padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
+  }
+  .battle.show { display: flex; }
+  .bt-top { flex: none; text-align: center; padding: 6px 0 0; }
+  .bt-face {
+    font-size: clamp(42px, 12vw, 64px); line-height: 1.1;
+    filter: drop-shadow(0 0 16px #ff1a1a);
+  }
+  .bt-face.hurt { animation: shake .4s; }
+  .bt-name { font-size: .8rem; letter-spacing: 4px; color: #ff7b7b; }
+  .hpbar {
+    height: 13px; max-width: 420px; margin: 4px auto; background: #2a0000;
+    border: 2px solid #fff; border-radius: 7px; overflow: hidden;
+  }
+  .hpbar div { height: 100%; background: linear-gradient(90deg, #ff2a2a, #ff9100); transition: width .35s; }
+  .bt-say {
+    flex: none; min-height: 2.8em; padding: 6px 8px; text-align: center;
+    font-size: clamp(.9rem, 4vw, 1rem); line-height: 1.35; color: #fff;
+  }
+  .bt-box {
+    position: relative; flex: 1; min-height: 120px; width: 100%; max-width: 520px;
+    margin: 0 auto; border: 3px solid #fff; border-radius: 6px; background: #000; overflow: hidden;
+  }
+  .bt-box canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .bt-aim { position: absolute; inset: 0; display: none; align-items: center; }
+  .bt-aim.show { display: flex; }
+  .bt-track {
+    position: relative; width: 100%; height: 44%;
+    background: linear-gradient(90deg, #3a0000, #ff7b00 35%, #ffee00 50%, #ff7b00 65%, #3a0000);
+  }
+  .bt-center { position: absolute; left: 50%; top: -6px; bottom: -6px; width: 2px; background: rgba(255,255,255,.55); }
+  .bt-marker { position: absolute; top: -8px; bottom: -8px; width: 6px; margin-left: -3px; background: #fff; box-shadow: 0 0 12px #fff; }
+  .bt-you {
+    flex: none; display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 7px 0; font-size: .82rem; letter-spacing: 2px;
+  }
+  .bt-you .hpbar { width: 140px; margin: 0; }
+  .bt-ctl { flex: none; display: flex; align-items: center; gap: 10px; padding: 2px 2px 8px; }
+  .bt-acts { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .bt-acts button {
+    min-height: 48px; font-family: inherit; font-size: 1rem; font-weight: bold;
+    border: 3px solid #fff; border-radius: 10px; background: #180000; color: #fff; cursor: pointer;
+  }
+  #btAttack { border-color: #ff5a5a; color: #ffb3b3; }
+  #btMercy  { border-color: #7fe08a; color: #b7f0bd; }
+  .bt-acts button:disabled { opacity: .3; }
+  .bt-dpad button { background: #180000; color: #ff5a5a; border-color: #fff; box-shadow: 0 4px #600; }
+  .bt-dpad button.pressed { background: #3a0000; }
+
+  /* ---------- You broke the system ---------- */
+  .broke {
+    position: fixed; inset: 0; z-index: 62; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; background: #00e05a; color: #002b11;
+  }
+  .broke.show { display: flex; animation: brokeIn 1.4s ease-out; }
+  @keyframes brokeIn { from { filter: brightness(4) saturate(0); } }
+  .broke h2 { margin: 0; font-size: clamp(2.2rem, 11vw, 3.6rem); letter-spacing: 4px; }
+  .broke p { font-size: clamp(1.1rem, 5vw, 1.5rem); margin: 10px 0 0; }
+  .broke button {
+    margin-top: 22px; min-height: 48px; padding: 12px 26px; font-family: inherit;
+    font-size: 1.05rem; font-weight: bold; border: 3px solid #002b11; border-radius: 12px;
+    background: #fff; color: #002b11; cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -458,6 +570,60 @@
     </div>
   </div>
 
+  <div class="hell" id="hell">
+    <div class="hell-glow"></div>
+    <div class="flames">
+      <span>🔥</span><span>🔥</span><span>🔥</span><span>🔥</span><span>🔥</span><span>🔥</span><span>🔥</span>
+    </div>
+    <div class="ember" style="left: 12%; animation-delay: 0s">🔥</div>
+    <div class="ember" style="left: 38%; animation-delay: 1.6s">🔥</div>
+    <div class="ember" style="left: 67%; animation-delay: 3s">🔥</div>
+    <div class="ember" style="left: 88%; animation-delay: 4.2s">🔥</div>
+    <div class="hell-text" id="hellText"></div>
+    <button class="hell-next" id="hellNext">▶ PLAY HIS GAME</button>
+  </div>
+
+  <div class="battle" id="battle">
+    <div class="bt-top">
+      <div class="bt-face" id="btFace">😈</div>
+      <div class="bt-name">HIM</div>
+      <div class="hpbar"><div id="btEnemyHp" style="width:100%"></div></div>
+    </div>
+    <div class="bt-say" id="btSay"></div>
+    <div class="bt-box" id="btBox">
+      <canvas id="btCanvas"></canvas>
+      <div class="bt-aim" id="btAim">
+        <div class="bt-track">
+          <div class="bt-center"></div>
+          <div class="bt-marker" id="btMarker" style="left:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="bt-you">
+      <span>YOU</span>
+      <div class="hpbar"><div id="btYouHp" style="width:100%"></div></div>
+      <span id="btYouNum">20 / 20</span>
+    </div>
+    <div class="bt-ctl">
+      <div class="bt-acts">
+        <button id="btAttack">⚔️ ATTACK</button>
+        <button id="btMercy">🕊️ MERCY</button>
+      </div>
+      <div class="dpad bt-dpad">
+        <button class="up" data-bt="up" aria-label="Up">▲</button>
+        <button class="left" data-bt="left" aria-label="Left">◀</button>
+        <button class="right" data-bt="right" aria-label="Right">▶</button>
+        <button class="down" data-bt="down" aria-label="Down">▼</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="broke" id="broke">
+    <h2>YOU DID IT</h2>
+    <p>You broke the system.</p>
+    <button id="brokeBtn">Play Again</button>
+  </div>
+
   <div class="bluehill" id="bluehill">
     <div class="bh-sun">🌤️</div>
     <div class="bh-cloud a">☁️</div>
@@ -529,7 +695,7 @@
 
   const $ = id => document.getElementById(id);
   const stage = $("stage"), face = $("face"), message = $("message");
-  let mode, mood, incoming, locked, endSteps, smiles, suffers, scaryTimer;
+  let mode, mood, incoming, locked, endSteps, smiles, suffers, scaryTimer, endAction;
 
   function faceFor(m) {
     if (m >= 85) return "😄";
@@ -713,10 +879,12 @@
       setTimeout(() => {
         if (smiles >= suffers) {
           showEnd("🙂 Smile Until the End",
-            "He smiles at you. You smile back. Neither of you can stop. Not ever.", "Wake Up");
+            "He smiles at you. You smile back. Neither of you can stop. Not ever.",
+            "Wake Up", enterHell);
         } else {
           showEnd("🩸 Suffer Until the End",
-            "He is full now. The room is quiet. He's still looking at you.", "Wake Up");
+            "He is full now. The room is quiet. He's still looking at you.",
+            "Wake Up", enterHell);
         }
       }, 1200);
     }
@@ -789,8 +957,9 @@
     }
   }
 
-  function showEnd(title, text, button) {
+  function showEnd(title, text, button, action) {
     locked = true;
+    endAction = action || reset;
     stopWeapon();
     $("overTitle").textContent = title;
     $("overText").textContent = text;
@@ -807,6 +976,14 @@
     hideRunner();
     $("godtier").classList.remove("show");
     $("godText").classList.remove("show");
+    endAction = reset;
+    hellTimers.forEach(clearTimeout); hellTimers = [];
+    if (bt) { cancelAnimationFrame(bt.raf); bt = null; }
+    $("hell").classList.remove("show");
+    $("hellNext").classList.remove("show");
+    $("hellText").innerHTML = "";
+    $("battle").classList.remove("show");
+    $("broke").classList.remove("show");
     $("bluehill").classList.remove("show");
     $("escape").classList.remove("show");
     $("escapeText").classList.remove("show");
@@ -828,7 +1005,7 @@
     say("Press a button to start!");
     setMood(0);
   }
-  $("restartBtn").onclick = reset;
+  $("restartBtn").onclick = () => (endAction || reset)();
   $("escapeBtn").onclick = reset;
 
   // ---------- Too happy: the obstacle course ----------
@@ -1163,6 +1340,339 @@
     hillStep++;
     showHillLine();
   };
+
+  // ---------- HELL ----------
+  const HELL_LINES = [
+    "You have failed the simulation.",
+    "You will never wake up.",
+    "You had a way out. The blue hill.",
+    "You didn't take it.",
+    "Oh well. That's just sad for you.",
+    "We're gonna play a game.",
+  ];
+  let hellTimers = [];
+
+  function enterHell() {
+    locked = true;
+    stopWeapon();
+    closePanel();
+    $("over").classList.remove("show");
+    $("hell").classList.add("show");
+    $("hellText").innerHTML = "";
+    $("hellNext").classList.remove("show");
+    hellTimers.forEach(clearTimeout);
+    hellTimers = HELL_LINES.map((t, i) => setTimeout(() => addHellLine(t), 700 + i * 1900));
+    hellTimers.push(setTimeout(() => $("hellNext").classList.add("show"),
+      900 + HELL_LINES.length * 1900));
+  }
+
+  function addHellLine(t) {
+    const p = document.createElement("p");
+    p.textContent = t;
+    $("hellText").appendChild(p);
+    requestAnimationFrame(() => p.classList.add("show"));
+  }
+
+  // Tapping the background shows the rest of the words at once.
+  $("hell").addEventListener("pointerdown", e => {
+    if (e.target.closest("#hellNext")) return;
+    if ($("hellText").children.length >= HELL_LINES.length) return;
+    hellTimers.forEach(clearTimeout); hellTimers = [];
+    $("hellText").innerHTML = "";
+    HELL_LINES.forEach(addHellLine);
+    $("hellNext").classList.add("show");
+  });
+  $("hellNext").onclick = startBattle;
+
+  // ---------- His game: the heart battle ----------
+  const ENEMY_HP = 100, YOU_HP = 20, TURN_TIME = 7;
+  const TAUNTS = [
+    "Dodge.", "The blue hill was right there.", "Smile while you burn.",
+    "You can't wake up.", "Faster.", "I like this game.", "Keep pressing buttons.",
+  ];
+  const btCanvas = $("btCanvas"), btx = btCanvas.getContext("2d");
+  let bt = null;
+
+  function startBattle() {
+    $("hell").classList.remove("show");
+    $("battle").classList.add("show");
+    $("btMercy").style.display = "";
+    $("btMercy").disabled = false;
+    bt = { phase: "menu", enemy: ENEMY_HP, you: YOU_HP, turnNo: 0, mercyGone: false,
+           shots: [], px: 0, py: 0, dir: {}, t: 0, spawnT: 0, inv: 0,
+           aim: 0, aimDir: 1, W: 1, H: 1, last: performance.now(), raf: 0 };
+    sizeBtCanvas();
+    bt.px = bt.W / 2; bt.py = bt.H / 2;
+    updateBars();
+    $("btFace").textContent = "😈";
+    btSay("You pressed so many buttons. Press one more.");
+    setMenu(true);
+    bt.raf = requestAnimationFrame(btTick);
+  }
+
+  function btSay(t) { $("btSay").textContent = t; }
+
+  function setMenu(on) {
+    $("btAttack").disabled = !on;
+    $("btMercy").disabled = !on || bt.mercyGone;
+    $("btAttack").textContent = bt && bt.phase === "aiming" ? "🎯 HIT!" : "⚔️ ATTACK";
+  }
+
+  function updateBars() {
+    $("btEnemyHp").style.width = Math.max(0, bt.enemy / ENEMY_HP * 100) + "%";
+    $("btYouHp").style.width = Math.max(0, bt.you / YOU_HP * 100) + "%";
+    $("btYouNum").textContent = Math.max(0, bt.you) + " / " + YOU_HP;
+  }
+
+  function sizeBtCanvas() {
+    const r = $("btBox").getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const oldW = bt.W, oldH = bt.H;
+    bt.W = r.width; bt.H = r.height;
+    btCanvas.width = Math.round(r.width * dpr);
+    btCanvas.height = Math.round(r.height * dpr);
+    btx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (oldW > 1) { // keep everything in place when the screen turns
+      const fx = bt.W / oldW, fy = bt.H / oldH;
+      bt.px *= fx; bt.py *= fy;
+      bt.shots.forEach(sh => { sh.x *= fx; sh.y *= fy; sh.vx *= fx; sh.vy *= fy; });
+    }
+  }
+  window.addEventListener("resize", () => { if (bt) sizeBtCanvas(); });
+
+  function takeMercyAway() {
+    bt.mercyGone = true;
+    $("btMercy").disabled = true;
+    setTimeout(() => { $("btMercy").style.display = "none"; }, 600);
+  }
+
+  $("btMercy").onclick = () => {
+    if (!bt || bt.phase !== "menu" || bt.mercyGone) return;
+    takeMercyAway();
+    $("btFace").textContent = "😠";
+    btSay("MERCY? I took it. You can only ATTACK now.");
+    setTimeout(() => { if (bt) $("btFace").textContent = "😈"; }, 1200);
+  };
+
+  $("btAttack").onclick = () => {
+    if (!bt) return;
+    if (bt.phase === "menu") {
+      bt.phase = "aiming";
+      bt.aim = 0; bt.aimDir = 1;
+      $("btAim").classList.add("show");
+      $("btMercy").disabled = true;
+      btSay("Stop the bar in the middle.");
+      setMenu(true);
+    } else if (bt.phase === "aiming") {
+      bt.phase = "hitting";
+      $("btAim").classList.remove("show");
+      const accuracy = 1 - Math.abs(bt.aim - 0.5) * 2;
+      const dmg = Math.round(5 + 20 * accuracy);
+      bt.enemy -= dmg;
+      updateBars();
+      $("btFace").textContent = "😖";
+      $("btFace").classList.remove("hurt"); void $("btFace").offsetWidth;
+      $("btFace").classList.add("hurt");
+      if (navigator.vibrate) navigator.vibrate(40);
+      btSay(accuracy > 0.85 ? "DIRECT HIT! " + dmg + " damage." : "You hit him for " + dmg + ".");
+      setMenu(false);
+      setTimeout(() => {
+        if (!bt) return;
+        if (bt.enemy <= 0) return winBattle();
+        if (!bt.mercyGone) {
+          takeMercyAway();
+          $("btFace").textContent = "😠";
+          btSay("MERCY? I took it. You can only ATTACK now.");
+          setTimeout(() => { if (bt) startEnemyTurn(); }, 1800);
+        } else {
+          startEnemyTurn();
+        }
+      }, 1300);
+    }
+  };
+
+  function startEnemyTurn() {
+    bt.phase = "enemy";
+    bt.turnNo++;
+    bt.t = TURN_TIME;
+    bt.spawnT = 0;
+    bt.shots = [];
+    bt.inv = 0;
+    bt.px = bt.W / 2; bt.py = bt.H / 2;
+    $("btFace").textContent = "😈";
+    btSay(random(TAUNTS));
+    setMenu(false);
+  }
+
+  function endEnemyTurn() {
+    bt.phase = "menu";
+    bt.shots = [];
+    btSay("Your turn. ATTACK.");
+    setMenu(true);
+  }
+
+  function hitYou() {
+    bt.you -= 2;
+    bt.inv = 0.7;
+    updateBars();
+    if (navigator.vibrate) navigator.vibrate(120);
+    if (bt.you <= 0) {
+      bt.you = YOU_HP;
+      updateBars();
+      bt.shots = [];
+      bt.t = 0;
+      btSay("You can't die here. Get up.");
+    }
+  }
+
+  function winBattle() {
+    bt.phase = "won";
+    bt.shots = [];
+    $("btFace").textContent = "😵";
+    $("btEnemyHp").style.width = "0%";
+    btSay("...oh.");
+    setTimeout(() => {
+      if (!bt) return;
+      cancelAnimationFrame(bt.raf);
+      bt = null;
+      $("battle").classList.remove("show");
+      $("broke").classList.add("show");
+    }, 2200);
+  }
+  $("brokeBtn").onclick = reset;
+
+  // Hold a direction button to move the heart.
+  document.querySelectorAll(".bt-dpad button").forEach(btn => {
+    const d = btn.dataset.bt;
+    const on = e => { e.preventDefault(); btn.classList.add("pressed"); if (bt) bt.dir[d] = true; };
+    const off = () => { btn.classList.remove("pressed"); if (bt) bt.dir[d] = false; };
+    btn.addEventListener("pointerdown", on);
+    btn.addEventListener("pointerup", off);
+    btn.addEventListener("pointerleave", off);
+    btn.addEventListener("pointercancel", off);
+    btn.addEventListener("contextmenu", e => e.preventDefault());
+  });
+  window.addEventListener("keydown", e => {
+    if (!bt || !KEYS[e.key]) return;
+    e.preventDefault();
+    bt.dir[KEYS[e.key]] = true;
+  });
+  window.addEventListener("keyup", e => { if (bt && KEYS[e.key]) bt.dir[KEYS[e.key]] = false; });
+
+  function btTick(now) {
+    if (!bt) return;
+    const dt = Math.min(0.05, (now - bt.last) / 1000);
+    bt.last = now;
+    if (bt.phase === "aiming") {
+      bt.aim += bt.aimDir * dt * 1.35;
+      if (bt.aim >= 1) { bt.aim = 1; bt.aimDir = -1; }
+      if (bt.aim <= 0) { bt.aim = 0; bt.aimDir = 1; }
+      $("btMarker").style.left = (bt.aim * 100) + "%";
+    } else if (bt.phase === "enemy") {
+      bt.t -= dt;
+      bt.inv = Math.max(0, bt.inv - dt);
+      moveHeart(dt);
+      spawnShots(dt);
+      moveShots(dt);
+      if (bt.t <= 0) endEnemyTurn();
+    }
+    drawBattle();
+    bt.raf = requestAnimationFrame(btTick);
+  }
+
+  function moveHeart(dt) {
+    const sp = bt.H * 0.85 * dt;
+    if (bt.dir.left)  bt.px -= sp;
+    if (bt.dir.right) bt.px += sp;
+    if (bt.dir.up)    bt.py -= sp;
+    if (bt.dir.down)  bt.py += sp;
+    const m = 12;
+    bt.px = Math.max(m, Math.min(bt.W - m, bt.px));
+    bt.py = Math.max(m, Math.min(bt.H - m, bt.py));
+  }
+
+  // Each turn uses a harder mix of patterns.
+  function spawnShots(dt) {
+    bt.spawnT -= dt;
+    if (bt.spawnT > 0) return;
+    const lvl = Math.min(4, bt.turnNo);
+    const speed = bt.H * (0.55 + lvl * 0.1);
+    const kind = Math.random();
+    if (lvl === 1 || kind < 0.45) {
+      bt.shots.push({ x: 14 + Math.random() * (bt.W - 28), y: -12, vx: 0, vy: speed, r: 9 });
+    } else if (kind < 0.8) {
+      const fromLeft = Math.random() < 0.5;
+      bt.shots.push({ x: fromLeft ? -12 : bt.W + 12, y: 14 + Math.random() * (bt.H - 28),
+                      vx: (fromLeft ? 1 : -1) * speed, vy: 0, r: 9 });
+    } else {
+      const x = 14 + Math.random() * (bt.W - 28);
+      bt.shots.push({ x, y: -12, vx: (Math.random() - 0.5) * speed, vy: speed, r: 9 });
+    }
+    bt.spawnT = Math.max(0.16, 0.62 - lvl * 0.09);
+  }
+
+  function moveShots(dt) {
+    for (let i = bt.shots.length - 1; i >= 0; i--) {
+      const sh = bt.shots[i];
+      sh.x += sh.vx * dt;
+      sh.y += sh.vy * dt;
+      if (sh.x < -40 || sh.x > bt.W + 40 || sh.y < -40 || sh.y > bt.H + 40) {
+        bt.shots.splice(i, 1);
+        continue;
+      }
+      const dx = sh.x - bt.px, dy = sh.y - bt.py;
+      if (bt.inv <= 0 && dx * dx + dy * dy < (sh.r + 8) * (sh.r + 8)) {
+        bt.shots.splice(i, 1);
+        hitYou();
+      }
+    }
+  }
+
+  function heartPath(cx, cy, s) {
+    btx.beginPath();
+    btx.moveTo(cx, cy - s * 0.35);
+    btx.bezierCurveTo(cx + s * 0.35, cy - s * 0.95, cx + s * 1.05, cy - s * 0.15, cx, cy + s * 0.8);
+    btx.bezierCurveTo(cx - s * 1.05, cy - s * 0.15, cx - s * 0.35, cy - s * 0.95, cx, cy - s * 0.35);
+    btx.closePath();
+  }
+
+  function drawBattle() {
+    const W = bt.W, H = bt.H;
+    if (!W || !H) return;
+    btx.clearRect(0, 0, W, H);
+    btx.fillStyle = "#000";
+    btx.fillRect(0, 0, W, H);
+
+    if (bt.phase === "enemy") {
+      btx.fillStyle = "#ff6a00";
+      for (const sh of bt.shots) {
+        btx.beginPath();
+        btx.arc(sh.x, sh.y, sh.r, 0, Math.PI * 2);
+        btx.fill();
+        btx.strokeStyle = "rgba(255,220,120,.9)";
+        btx.lineWidth = 2;
+        btx.stroke();
+      }
+      // Time left in this turn
+      btx.fillStyle = "rgba(255,255,255,.25)";
+      btx.fillRect(0, H - 3, W * Math.max(0, bt.t / TURN_TIME), 3);
+    } else if (bt.phase === "menu" || bt.phase === "hitting") {
+      btx.fillStyle = "rgba(255,255,255,.35)";
+      btx.font = "bold 14px sans-serif";
+      btx.textAlign = "center"; btx.textBaseline = "middle";
+      btx.fillText(bt.phase === "menu" ? "HIS TURN IS NEXT" : "", W / 2, 18);
+    }
+
+    // Your heart (hidden while blinking after a hit)
+    if (bt.phase !== "won" && !(bt.inv > 0 && Math.floor(bt.inv * 12) % 2)) {
+      heartPath(bt.px, bt.py, 11);
+      btx.fillStyle = "#ff2a2a";
+      btx.fill();
+      btx.strokeStyle = "#ff9a9a";
+      btx.lineWidth = 1.5;
+      btx.stroke();
+    }
+  }
 
   // ---------- Made it: God tier, close your eyes, escape ----------
   function reachGodTier() {
