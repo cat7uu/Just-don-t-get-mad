@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Just Don't Get Mad</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    background: linear-gradient(#8fd3ff, #e8f7ff);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #222;
+  }
+  h1 { margin: 16px 0 4px; font-size: 2rem; text-shadow: 2px 2px #fff; }
+  .sub { margin: 0 0 12px; color: #444; }
+
+  /* Mood meter */
+  .meter-wrap { width: min(90vw, 520px); }
+  .meter-label { display: flex; justify-content: space-between; font-weight: bold; }
+  .meter {
+    height: 26px; border: 3px solid #222; border-radius: 14px;
+    background: #fff; overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%; width: 50%;
+    background: linear-gradient(90deg, #ff4d4d, #ffd84d, #4dd96b);
+    background-size: 520px 100%;
+    transition: width .4s;
+  }
+
+  /* Stage */
+  .stage {
+    position: relative;
+    width: min(90vw, 520px); height: 280px;
+    margin: 14px 0;
+    background: #fff8e6; border: 3px solid #222; border-radius: 16px;
+    overflow: hidden;
+  }
+  .face {
+    position: absolute; left: 50%; bottom: 20px;
+    transform: translateX(-50%);
+    font-size: 96px; transition: transform .3s;
+  }
+  .face.spin { animation: spin 1s linear 2; }
+  @keyframes spin { to { transform: translateX(-50%) rotate(360deg); } }
+  .face.shake { animation: shake .5s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(-50%); }
+    25% { transform: translateX(-60%); }
+    75% { transform: translateX(-40%); }
+  }
+  .face.bounce { animation: bounce .6s; }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-40px); }
+  }
+  .projectile {
+    position: absolute; left: 50%; top: -60px;
+    transform: translateX(-50%);
+    font-size: 54px;
+  }
+  .boom {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%) scale(.2);
+    font-size: 120px; opacity: 0;
+    animation: boom .9s forwards;
+    pointer-events: none;
+  }
+  @keyframes boom {
+    40% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+  }
+  .message {
+    position: absolute; top: 10px; left: 0; right: 0;
+    text-align: center; font-weight: bold; font-size: 1.15rem;
+    padding: 0 10px;
+  }
+  .warning { color: #c00; }
+
+  /* Buttons */
+  .controls { display: flex; gap: 30px; align-items: center; }
+  .big {
+    width: 130px; height: 130px; border-radius: 50%;
+    border: 5px solid #222; font-size: 1.4rem; font-weight: bold;
+    color: #fff; cursor: pointer; text-shadow: 1px 1px 2px #000;
+    box-shadow: 0 8px #222; transition: transform .05s, box-shadow .05s;
+  }
+  .big:active { transform: translateY(6px); box-shadow: 0 2px #222; }
+  .red { background: radial-gradient(circle at 35% 35%, #ff7a7a, #d10000); }
+  .green { background: radial-gradient(circle at 35% 35%, #7dff9a, #0a9a2c); }
+  .big:disabled { filter: grayscale(.8); cursor: not-allowed; }
+
+  .lookup {
+    margin-top: 22px; padding: 10px 22px;
+    font-size: 1.1rem; font-weight: bold;
+    border: 3px solid #222; border-radius: 12px;
+    background: #ffe066; cursor: pointer;
+  }
+
+  /* Action list panel */
+  .panel {
+    display: none;
+    width: min(90vw, 520px);
+    margin: 14px 0 30px;
+    background: #fff; border: 3px solid #222; border-radius: 16px;
+    padding: 12px 16px;
+  }
+  .panel.open { display: block; }
+  .panel h3 { margin: 8px 0; }
+  .panel ul { list-style: none; padding: 0; margin: 0 0 10px; }
+  .panel li {
+    margin: 6px 0; padding: 8px 10px; border-radius: 10px;
+    cursor: pointer; display: flex; justify-content: space-between;
+  }
+  .panel .redlist li { background: #ffe0e0; }
+  .panel .greenlist li { background: #e0ffe6; }
+  .panel li:hover { outline: 2px solid #222; }
+  .hint { font-size: .85rem; color: #555; }
+
+  .over {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    display: none; align-items: center; justify-content: center;
+  }
+  .over.show { display: flex; }
+  .over .box {
+    background: #fff; border: 4px solid #222; border-radius: 20px;
+    padding: 24px 30px; text-align: center; max-width: 90vw;
+  }
+  .over button {
+    margin-top: 10px; padding: 10px 22px; font-size: 1.1rem;
+    border-radius: 12px; border: 3px solid #222; background: #8fd3ff; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <h1>Just Don't Get Mad</h1>
+  <p class="sub">🔴 Red = SHOOT &nbsp; | &nbsp; 🟢 Green = STOP</p>
+
+  <div class="meter-wrap">
+    <div class="meter-label"><span>😡 Mad</span><span id="moodText">Mood: 50</span><span>😄 Happy</span></div>
+    <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="message" id="message">Press a button to start!</div>
+    <div class="face" id="face">🙂</div>
+  </div>
+
+  <div class="controls">
+    <button class="big red" id="redBtn">SHOOT</button>
+    <button class="big green" id="greenBtn">STOP</button>
+  </div>
+
+  <button class="lookup" id="lookupBtn">🔍 Look Up Actions</button>
+
+  <div class="panel" id="panel">
+    <h3>🔴 Red Button (Shoot)</h3>
+    <ul class="redlist" id="redList"></ul>
+    <h3>🟢 Green Button (Stop)</h3>
+    <ul class="greenlist" id="greenList"></ul>
+    <p class="hint">Tap an action to do it. The big buttons pick one at random.
+      If a weapon is falling, the green button always shoots it down!</p>
+  </div>
+
+  <div class="over" id="over">
+    <div class="box">
+      <h2 id="overTitle"></h2>
+      <p id="overText"></p>
+      <button id="restartBtn">Play Again</button>
+    </div>
+  </div>
+
+<script>
+  const RED_ACTIONS = [
+    { name: "Nuclear Bomb",            icon: "☢️", mood: -30, weapon: true,  text: "A nuclear bomb is falling! STOP it!" },
+    { name: "Chemical Weapon",         icon: "🧪", mood: -25, weapon: true,  text: "A chemical weapon is falling! STOP it!" },
+    { name: "Spin",                    icon: "🌀", mood: -5,  anim: "spin",  text: "Wheee! You're dizzy..." },
+    { name: "Dissect",                 icon: "🔪", mood: -15, anim: "shake", text: "Ew! You dissected a frog. Gross!" },
+    { name: "Do Not Go to the Dentist",icon: "🦷", mood: -10, anim: "shake", text: "You skipped the dentist. Ouch, toothache!" },
+  ];
+  const GREEN_ACTIONS = [
+    { name: "Shoot Down Weapon",  icon: "🎯", mood: 10, shootDown: true, text: "Pew pew! Nothing to shoot down... but good aim!" },
+    { name: "Go to the Dentist",  icon: "🪥", mood: 10, anim: "bounce", text: "Sparkly clean teeth! ✨" },
+    { name: "Go to the Doctor",   icon: "🩺", mood: 10, anim: "bounce", text: "The doctor says you're healthy!" },
+    { name: "Be Happy",           icon: "😄", mood: 15, anim: "bounce", text: "You chose to be happy! 🎉" },
+  ];
+
+  const $ = id => document.getElementById(id);
+  const stage = $("stage"), face = $("face"), message = $("message");
+  let mood, incoming;
+
+  function faceFor(m) {
+    if (m >= 85) return "😄";
+    if (m >= 60) return "🙂";
+    if (m >= 40) return "😐";
+    if (m >= 20) return "😠";
+    return "😡";
+  }
+
+  function setMood(delta) {
+    mood = Math.max(0, Math.min(100, mood + delta));
+    $("meterFill").style.width = mood + "%";
+    $("moodText").textContent = "Mood: " + mood;
+    face.textContent = faceFor(mood);
+    if (mood <= 0) endGame(false);
+    else if (mood >= 100) endGame(true);
+  }
+
+  function say(text, warn) {
+    message.textContent = text;
+    message.className = "message" + (warn ? " warning" : "");
+  }
+
+  function animate(name) {
+    if (!name) return;
+    face.classList.remove("spin", "shake", "bounce");
+    void face.offsetWidth; // restart animation
+    face.classList.add(name);
+  }
+
+  function boom(icon) {
+    const b = document.createElement("div");
+    b.className = "boom";
+    b.textContent = icon;
+    stage.appendChild(b);
+    setTimeout(() => b.remove(), 900);
+  }
+
+  // Weapons fall from the sky; you have 3 seconds to press STOP.
+  function launchWeapon(action) {
+    const p = document.createElement("div");
+    p.className = "projectile";
+    p.textContent = action.icon;
+    stage.appendChild(p);
+    const duration = 3000, start = performance.now();
+    const height = stage.clientHeight - 150;
+    incoming = { action, el: p, raf: 0 };
+    const step = now => {
+      if (!incoming || incoming.el !== p) return;
+      const t = (now - start) / duration;
+      p.style.top = (-60 + t * height) + "px";
+      if (t >= 1) {
+        p.remove();
+        incoming = null;
+        boom("💥");
+        animate("shake");
+        say(action.name + " hit! You're getting MAD!", true);
+        setMood(action.mood);
+      } else {
+        incoming.raf = requestAnimationFrame(step);
+      }
+    };
+    incoming.raf = requestAnimationFrame(step);
+  }
+
+  function doRed(action) {
+    if (mood <= 0 || mood >= 100) return;
+    if (action.weapon) {
+      if (incoming) { say("A weapon is already falling! Press STOP!", true); return; }
+      say(action.text, true);
+      launchWeapon(action);
+    } else {
+      say(action.icon + " " + action.text);
+      animate(action.anim);
+      setMood(action.mood);
+    }
+  }
+
+  function doGreen(action) {
+    if (mood <= 0 || mood >= 100) return;
+    if (action.shootDown && incoming) {
+      cancelAnimationFrame(incoming.raf);
+      const el = incoming.el, name = incoming.action.name;
+      incoming = null;
+      el.textContent = "💥";
+      setTimeout(() => el.remove(), 400);
+      say("🎯 You shot down the " + name + "! Phew!");
+      animate("bounce");
+      setMood(20);
+      return;
+    }
+    say(action.icon + " " + action.text);
+    animate(action.anim);
+    setMood(action.mood);
+  }
+
+  const random = list => list[Math.floor(Math.random() * list.length)];
+
+  $("redBtn").onclick = () => doRed(random(RED_ACTIONS));
+  $("greenBtn").onclick = () => {
+    // If a weapon is falling, STOP always shoots it down.
+    doGreen(incoming ? GREEN_ACTIONS[0] : random(GREEN_ACTIONS));
+  };
+
+  $("lookupBtn").onclick = () => {
+    const open = $("panel").classList.toggle("open");
+    $("lookupBtn").textContent = open ? "🔼 Hide Actions" : "🔍 Look Up Actions";
+  };
+
+  function fillList(ul, actions, handler) {
+    actions.forEach(a => {
+      const li = document.createElement("li");
+      const sign = a.mood > 0 ? "+" : "";
+      li.innerHTML = `<span>${a.icon} ${a.name}</span><span>${sign}${a.mood}</span>`;
+      li.onclick = () => handler(a);
+      ul.appendChild(li);
+    });
+  }
+  fillList($("redList"), RED_ACTIONS, doRed);
+  fillList($("greenList"), GREEN_ACTIONS, doGreen);
+
+  function endGame(won) {
+    if (incoming) { cancelAnimationFrame(incoming.raf); incoming.el.remove(); incoming = null; }
+    $("overTitle").textContent = won ? "😄 You Win!" : "😡 You Got Mad!";
+    $("overText").textContent = won
+      ? "You stayed calm and happy. Great job!"
+      : "Your mood hit zero. Remember: just don't get mad!";
+    $("over").classList.add("show");
+  }
+
+  function reset() {
+    mood = 50;
+    incoming = null;
+    $("over").classList.remove("show");
+    stage.querySelectorAll(".projectile, .boom").forEach(e => e.remove());
+    say("Press a button to start!");
+    setMood(0);
+  }
+  $("restartBtn").onclick = reset;
+  reset();
+</script>
+</body>
+</html>
