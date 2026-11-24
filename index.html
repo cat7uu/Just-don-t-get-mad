@@ -239,6 +239,88 @@
   @media (prefers-reduced-motion: reduce) {
     .message.scary, .stage.flicker, .nightmare .face { animation: none; }
   }
+
+  /* ---------- Too happy: the obstacle course ---------- */
+  .runner {
+    position: fixed; inset: 0; z-index: 40; display: none;
+    flex-direction: column;
+    background: linear-gradient(#ffd6f2, #fff7c2);
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .runner.show { display: flex; }
+  .run-top { padding: 8px 14px 6px; text-align: center; }
+  .run-top h2 { margin: 0; font-size: 1.25rem; color: #d6248a; letter-spacing: 1px; text-shadow: 0 0 10px #fff; }
+  .run-prog { height: 14px; margin: 6px auto 0; max-width: 520px; border: 2px solid #d6248a; border-radius: 8px; background: #fff; overflow: hidden; }
+  .run-prog div { height: 100%; width: 0; background: linear-gradient(90deg, #ff8ad8, #ffd700); }
+  .run-field { position: relative; flex: 1; min-height: 0; }
+  .run-field canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .run-card {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: min(88vw, 380px); background: #fff; border: 3px solid #d6248a; border-radius: 18px;
+    padding: 16px 18px; text-align: center; color: #333;
+  }
+  .run-card h3 { margin: 0 0 6px; color: #d6248a; }
+  .run-card ul { text-align: left; padding-left: 20px; margin: 8px 0; line-height: 1.5; }
+  .run-card button {
+    min-height: 48px; padding: 10px 26px; font-size: 1.1rem; font-weight: bold;
+    border-radius: 12px; border: 3px solid #222; background: #ffd700; cursor: pointer;
+  }
+  .run-bottom {
+    position: relative; height: 190px; flex: none;
+    display: flex; align-items: center; padding: 0 14px;
+  }
+  .run-hint { flex: 1; font-size: .9rem; color: #7a3a66; line-height: 1.4; padding-right: 8px; }
+  .dpad {
+    display: grid; grid-template-columns: repeat(3, 58px); grid-template-rows: repeat(3, 58px);
+    gap: 2px; margin-left: auto;
+  }
+  .dpad button {
+    border: 3px solid #222; border-radius: 14px; background: #fff;
+    font-size: 1.6rem; font-weight: bold; color: #d6248a; cursor: pointer;
+    box-shadow: 0 4px #222; touch-action: none;
+  }
+  .dpad button.pressed { transform: translateY(3px); box-shadow: 0 1px #222; background: #ffe3f5; }
+  .dpad .up { grid-area: 1 / 2; } .dpad .left { grid-area: 2 / 1; }
+  .dpad .right { grid-area: 2 / 3; } .dpad .down { grid-area: 3 / 2; }
+
+  /* ---------- God tier & the escape ---------- */
+  .godtier {
+    position: fixed; inset: 0; z-index: 45; display: none;
+    flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    background: radial-gradient(circle, #fffbe0 0%, #ffe066 45%, #e0a800 100%);
+    color: #5a3d00; padding: 20px;
+  }
+  .godtier.show { display: flex; animation: holyIn 1.5s ease-out; }
+  @keyframes holyIn { from { filter: brightness(3); } to { filter: brightness(1); } }
+  .godtier h2 { font-size: clamp(2.4rem, 12vw, 4rem); margin: 0; letter-spacing: 4px; text-shadow: 0 0 30px #fff; }
+  .godtier .halo { font-size: 90px; animation: float 2s ease-in-out infinite; }
+  @keyframes float { 50% { transform: translateY(-12px); } }
+  .godtier p { font-size: 1.2rem; opacity: 0; transition: opacity 1.5s; }
+  .godtier p.show { opacity: 1; }
+  .lids-close .lid.top    { animation: lidTopClose 2.6s ease-in forwards; }
+  .lids-close .lid.bottom { animation: lidBottomClose 2.6s ease-in forwards; }
+  @keyframes lidTopClose {
+    0% { transform: translateY(-105%); } 55% { transform: translateY(-30%); }
+    70% { transform: translateY(-45%); } 100% { transform: translateY(0); }
+  }
+  @keyframes lidBottomClose {
+    0% { transform: translateY(105%); } 55% { transform: translateY(30%); }
+    70% { transform: translateY(45%); } 100% { transform: translateY(0); }
+  }
+  .escape {
+    position: fixed; inset: 0; z-index: 60; background: #000; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; color: #fff;
+  }
+  .escape.show { display: flex; }
+  .escape p { font-size: clamp(1.3rem, 6vw, 2rem); max-width: 600px; opacity: 0; transition: opacity 2.5s; }
+  .escape p.show { opacity: 1; }
+  .escape button {
+    margin-top: 20px; min-height: 48px; padding: 10px 24px; font-size: 1.1rem;
+    border-radius: 12px; border: 2px solid #fff; background: transparent; color: #fff;
+    cursor: pointer; opacity: 0; transition: opacity 1.5s;
+  }
+  .escape button.show { opacity: 1; }
 </style>
 </head>
 <body>
@@ -282,6 +364,46 @@
       <p id="overText"></p>
       <button id="restartBtn">Play Again</button>
     </div>
+  </div>
+
+  <div class="runner" id="runner">
+    <div class="run-top">
+      <h2>✨ THE ILLUSION OF PEACE ✨</h2>
+      <div class="run-prog"><div id="runProg"></div></div>
+    </div>
+    <div class="run-field" id="runField">
+      <canvas id="runCanvas"></canvas>
+      <div class="run-card" id="runCard">
+        <h3>😄 He's TOO happy.</h3>
+        <p>Something is wrong. Run, and don't fall.</p>
+        <ul>
+          <li><b>⬆ Up</b>: jump over holes and fences</li>
+          <li><b>⬇ Down</b>: slide under bars</li>
+          <li><b>⬅ ➡ Left / Right</b>: dodge the smiling walls</li>
+        </ul>
+        <button id="runStart">RUN</button>
+      </div>
+    </div>
+    <div class="run-bottom">
+      <div class="run-hint" id="runHint">Reach the end to escape.<br>Fall, and he gets mad.</div>
+      <div class="dpad">
+        <button class="up" data-dir="up" aria-label="Jump">▲</button>
+        <button class="left" data-dir="left" aria-label="Left">◀</button>
+        <button class="right" data-dir="right" aria-label="Right">▶</button>
+        <button class="down" data-dir="down" aria-label="Slide">▼</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="godtier" id="godtier">
+    <div class="halo">😇</div>
+    <h2>GOD TIER</h2>
+    <p id="godText">You close your eyes...</p>
+  </div>
+
+  <div class="escape" id="escape">
+    <p id="escapeText">You successfully escaped the illusion of peace.</p>
+    <button id="escapeBtn">Play Again</button>
   </div>
 
 <script>
@@ -343,7 +465,7 @@
     $("moodText").textContent = "Mood: " + mood;
     face.textContent = faceFor(mood);
     if (mood <= 0) getMad();
-    else if (mood >= 100) showEnd("😄 You Win!", "You stayed calm and happy. Great job!", "Play Again");
+    else if (mood >= 100) getTooHappy();
   }
 
   function say(text, warn) {
@@ -456,6 +578,7 @@
     setTimeout(() => txt.classList.add("show"), 1700);
     setTimeout(() => txt.classList.remove("show"), 3600);
     setTimeout(() => {
+      hideRunner();
       enterNightmare();
       // Swap the flat black for eyelids, then let them flutter open.
       document.body.classList.add("lids-on");
@@ -600,7 +723,13 @@
     mood = 50;
     incoming = null;
     locked = false;
-    document.body.classList.remove("nightmare", "lids-on", "lids-open");
+    document.body.classList.remove("nightmare", "lids-on", "lids-open", "lids-close");
+    hideRunner();
+    $("godtier").classList.remove("show");
+    $("godText").classList.remove("show");
+    $("escape").classList.remove("show");
+    $("escapeText").classList.remove("show");
+    $("escapeBtn").classList.remove("show");
     $("over").classList.remove("show");
     $("blackout").classList.remove("on");
     $("blackoutText").classList.remove("show");
@@ -619,6 +748,296 @@
     setMood(0);
   }
   $("restartBtn").onclick = reset;
+  $("escapeBtn").onclick = reset;
+
+  // ---------- Too happy: the obstacle course ----------
+  // Distances are in "screen heights" so it plays the same on any screen.
+  const canvas = $("runCanvas"), ctx = canvas.getContext("2d");
+  const PLAYER_Y = 0.74, HALF_BODY = 0.03;
+  const JUMP_TIME = 0.62, SLIDE_TIME = 0.7;
+  const DEPTH = { pit: 0.11, hurdle: 0.035, bar: 0.05, wall: 0.1 };
+  let run = null;
+
+  function getTooHappy() {
+    locked = true;
+    stopWeapon();
+    closePanel();
+    face.textContent = "😁";
+    say("😄😄😄 He's TOO happy... something is wrong.", true);
+    setTimeout(() => {
+      $("runner").classList.add("show");
+      $("runCard").style.display = "";
+      run = { state: "intro", course: buildCourse(), s: 0, lane: 1, laneX: 1,
+              jump: 0, slide: 0, t: 0, fallKind: "", fallT: 0, last: 0, raf: 0 };
+      sizeCanvas();
+      drawRunner();
+    }, 1800);
+  }
+
+  function buildCourse() {
+    const rows = [];
+    let d = 1.4;
+    const N = 34;
+    for (let i = 0; i < N; i++) {
+      const k = i / N;
+      const r = Math.random();
+      let row;
+      if (r < 0.3) {
+        // Walls: block one lane early on, two lanes later.
+        const open = Math.floor(Math.random() * 3);
+        const lanes = k > 0.35 && Math.random() < 0.6 ? [0, 1, 2].filter(l => l !== open)
+                                                     : [Math.floor(Math.random() * 3)];
+        row = { type: "wall", lanes };
+      } else if (r < 0.55) {
+        const lanes = Math.random() < 0.5 ? [0, 1, 2] : [Math.floor(Math.random() * 3)];
+        row = { type: "pit", lanes };
+      } else if (r < 0.78) {
+        row = { type: "hurdle", lanes: [0, 1, 2] };
+      } else {
+        row = { type: "bar", lanes: [0, 1, 2] };
+      }
+      row.d = d;
+      rows.push(row);
+      d += 1.05 - 0.3 * k + Math.random() * 0.2;
+    }
+    rows.end = d + 0.6;
+    return rows;
+  }
+
+  function sizeCanvas() {
+    const r = $("runField").getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(r.width * dpr);
+    canvas.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener("resize", () => { if (run) { sizeCanvas(); drawRunner(); } });
+
+  $("runStart").onclick = () => {
+    $("runCard").style.display = "none";
+    run.state = "countdown";
+    run.t = 3;
+    run.last = performance.now();
+    run.raf = requestAnimationFrame(tick);
+  };
+
+  function control(dir) {
+    if (!run || (run.state !== "running" && run.state !== "countdown")) return;
+    if (dir === "left") run.lane = Math.max(0, run.lane - 1);
+    if (dir === "right") run.lane = Math.min(2, run.lane + 1);
+    if (dir === "up" && run.jump <= 0) { run.jump = JUMP_TIME; run.slide = 0; }
+    if (dir === "down" && run.jump <= 0) run.slide = SLIDE_TIME;
+  }
+  document.querySelectorAll(".dpad button").forEach(btn => {
+    btn.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      btn.classList.add("pressed");
+      if (navigator.vibrate) navigator.vibrate(15);
+      control(btn.dataset.dir);
+    });
+    const up = () => btn.classList.remove("pressed");
+    btn.addEventListener("pointerup", up);
+    btn.addEventListener("pointerleave", up);
+    btn.addEventListener("pointercancel", up);
+    btn.addEventListener("contextmenu", e => e.preventDefault());
+    btn.addEventListener("click", e => { if (e.detail === 0) control(btn.dataset.dir); });
+  });
+  const KEYS = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
+                 w: "up", s: "down", a: "left", d: "right" };
+  window.addEventListener("keydown", e => {
+    if (!run || !KEYS[e.key]) return;
+    e.preventDefault();
+    control(KEYS[e.key]);
+  });
+
+  function tick(now) {
+    if (!run) return;
+    const dt = Math.min(0.05, (now - run.last) / 1000);
+    run.last = now;
+    run.laneX += (run.lane - run.laneX) * Math.min(1, dt * 18);
+
+    if (run.state === "countdown") {
+      run.t -= dt;
+      if (run.t <= 0) run.state = "running";
+    } else if (run.state === "running") {
+      const progress = run.s / run.course.end;
+      const speed = 0.55 + 0.35 * progress;
+      run.s += speed * dt;
+      run.jump = Math.max(0, run.jump - dt);
+      run.slide = Math.max(0, run.slide - dt);
+      $("runProg").style.width = Math.min(100, progress * 100) + "%";
+      checkHits();
+      if (run.state === "running" && run.s >= run.course.end) {
+        run.state = "done";
+        drawRunner();
+        return reachGodTier();
+      }
+    } else if (run.state === "falling") {
+      run.fallT += dt;
+      if (run.fallT > 1.1) {
+        run.state = "gone";
+        drawRunner();
+        $("runHint").textContent = "You fell.";
+        return getMad();
+      }
+    }
+    drawRunner();
+    run.raf = requestAnimationFrame(tick);
+  }
+
+  function checkHits() {
+    const lane = Math.round(run.laneX);
+    for (const o of run.course) {
+      const gap = Math.abs(o.d - run.s);
+      if (gap > 0.2 || !o.lanes.includes(lane)) continue;
+      const jumping = run.jump > 0, sliding = run.slide > 0;
+      let hit = false;
+      if (o.type === "pit") hit = gap < DEPTH.pit / 2 && !jumping;
+      else if (gap < DEPTH[o.type] / 2 + HALF_BODY) {
+        if (o.type === "wall") hit = true;
+        if (o.type === "hurdle") hit = !jumping;
+        if (o.type === "bar") hit = !sliding;
+      }
+      if (hit) {
+        run.state = "falling";
+        run.fallKind = o.type === "pit" ? "pit" : "trip";
+        run.fallT = 0;
+        if (navigator.vibrate) navigator.vibrate(200);
+        return;
+      }
+    }
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h);
+  }
+
+  function drawRunner() {
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    if (!W || !H) return;
+    const trackW = Math.min(W * 0.86, 440), laneW = trackW / 3, x0 = (W - trackW) / 2;
+    const toY = d => PLAYER_Y * H - (d - run.s) * H;
+    const laneCx = l => x0 + laneW * (l + 0.5);
+
+    // Sky & candy track
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#ffd6f2"); g.addColorStop(1, "#fff7c2");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const lanesCol = ["#ffe3f5", "#fff3c4", "#dcfff0"];
+    for (let l = 0; l < 3; l++) { ctx.fillStyle = lanesCol[l]; ctx.fillRect(x0 + l * laneW, 0, laneW, H); }
+    ctx.strokeStyle = "#ffb3e0"; ctx.lineWidth = 3; ctx.setLineDash([18, 18]);
+    ctx.lineDashOffset = -(run.s * H) % 36;
+    for (let l = 1; l < 3; l++) {
+      ctx.beginPath(); ctx.moveTo(x0 + l * laneW, 0); ctx.lineTo(x0 + l * laneW, H); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    // Sparkles drifting by on the sides
+    ctx.font = "18px sans-serif"; ctx.fillStyle = "#000"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (let i = 0; i < 8; i++) {
+      const y = ((i * 0.37 + run.s) % 1.2) * H - 0.1 * H;
+      ctx.fillText(i % 2 ? "✨" : "🌸", i % 2 ? x0 / 2 : W - x0 / 2, y);
+    }
+    // Finish line
+    const fy = toY(run.course.end);
+    if (fy > -40 && fy < H + 40) {
+      for (let i = 0; i < 12; i++) {
+        ctx.fillStyle = i % 2 ? "#222" : "#fff";
+        ctx.fillRect(x0 + i * trackW / 12, fy - 10, trackW / 12, 20);
+      }
+      ctx.fillStyle = "#d6248a"; ctx.font = "bold 18px sans-serif";
+      ctx.fillText("ESCAPE", W / 2, fy - 26);
+    }
+
+    // Obstacles
+    for (const o of run.course) {
+      const y = toY(o.d);
+      if (y < -80 || y > H + 80) continue;
+      const dh = DEPTH[o.type] * H;
+      for (const l of o.lanes) {
+        const lx = x0 + l * laneW + 4, lw = laneW - 8;
+        if (o.type === "pit") {
+          const pg = ctx.createRadialGradient(lx + lw / 2, y, 2, lx + lw / 2, y, lw / 1.5);
+          pg.addColorStop(0, "#000"); pg.addColorStop(1, "#4a1d5c");
+          ctx.fillStyle = pg; roundRect(lx, y - dh / 2, lw, dh, 14); ctx.fill();
+        } else if (o.type === "wall") {
+          ctx.fillStyle = "rgba(0,0,0,.15)"; roundRect(lx + 4, y - dh / 2 + 8, lw, dh, 10); ctx.fill();
+          ctx.fillStyle = "#ffd700"; roundRect(lx, y - dh / 2, lw, dh, 10); ctx.fill();
+          ctx.strokeStyle = "#c79a00"; ctx.lineWidth = 3; ctx.stroke();
+          ctx.font = `${Math.min(dh * 0.8, lw * 0.5)}px sans-serif`; ctx.fillStyle = "#000";
+          ctx.fillText("😃", lx + lw / 2, y);
+        }
+      }
+      if (o.type === "hurdle") {
+        ctx.fillStyle = "#ff5fa2"; ctx.fillRect(x0 + 4, y - dh / 2, trackW - 8, dh);
+        ctx.fillStyle = "#fff";
+        for (let i = 0; i < 9; i++) ctx.fillRect(x0 + 10 + i * (trackW - 20) / 8 - 3, y - dh / 2, 6, dh);
+      } else if (o.type === "bar") {
+        ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(x0, y - dh / 2 + 14, trackW, dh);
+        ctx.fillStyle = "#8a5cff"; ctx.fillRect(x0 - 6, y - dh / 2, trackW + 12, dh);
+        ctx.fillStyle = "#5b33d6"; ctx.fillRect(x0 - 12, y - dh, 10, dh * 2); ctx.fillRect(x0 + trackW + 2, y - dh, 10, dh * 2);
+      }
+      // Hint arrow
+      const hint = o.type === "bar" ? "⬇" : (o.type === "pit" || o.type === "hurdle") ? "⬆" : "";
+      if (hint) {
+        ctx.font = "bold 16px sans-serif"; ctx.fillStyle = "#fff";
+        const hx = o.type === "pit" ? laneCx(o.lanes[0]) : x0 + 16;
+        ctx.fillText(hint, hx, y);
+      }
+    }
+
+    // Player
+    const px = x0 + laneW * (run.laneX + 0.5), py = PLAYER_Y * H;
+    const size = laneW * 0.55;
+    let lift = 0, sx = 1, sy = 1, rot = 0, alpha = 1;
+    if (run.jump > 0) { const k = Math.sin(Math.PI * (1 - run.jump / JUMP_TIME)); lift = k * size * 0.6; sx = sy = 1 + 0.35 * k; }
+    if (run.slide > 0) { sy = 0.55; sx = 1.2; }
+    let face = "😄";
+    if (run.state === "falling" || run.state === "gone") {
+      const k = Math.min(1, run.fallT / 1);
+      face = "😨";
+      if (run.fallKind === "pit") { sx = sy = 1 - k; rot = k * 6; }
+      else { rot = k * 1.6; alpha = 1 - k * 0.3; }
+    }
+    ctx.fillStyle = "rgba(0,0,0,.18)";
+    ctx.beginPath(); ctx.ellipse(px, py + size * 0.42, size * 0.4 * (lift ? 0.7 : 1), size * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(px, py - lift); ctx.rotate(rot); ctx.scale(sx, sy);
+    ctx.font = `${size}px sans-serif`;
+    ctx.fillStyle = "#000"; // emoji pick up the fill's transparency
+    ctx.fillText(face, 0, 0);
+    ctx.restore();
+
+    if (run.state === "countdown") {
+      ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#d6248a"; ctx.font = "bold 72px sans-serif";
+      ctx.fillText(String(Math.ceil(run.t)), W / 2, H * 0.4);
+    }
+  }
+
+  function hideRunner() {
+    if (run) cancelAnimationFrame(run.raf);
+    run = null;
+    $("runner").classList.remove("show");
+    $("runProg").style.width = "0";
+    $("runHint").innerHTML = "Reach the end to escape.<br>Fall, and he gets mad.";
+  }
+
+  // ---------- Made it: God tier, close your eyes, escape ----------
+  function reachGodTier() {
+    $("godtier").classList.add("show");
+    hideRunner();
+    setTimeout(() => $("godText").classList.add("show"), 1800);
+    setTimeout(() => document.body.classList.add("lids-on", "lids-close"), 3800);
+    setTimeout(() => {
+      $("escape").classList.add("show");
+      document.body.classList.remove("lids-on", "lids-close");
+      $("godtier").classList.remove("show");
+    }, 6600);
+    setTimeout(() => $("escapeText").classList.add("show"), 7400);
+    setTimeout(() => $("escapeBtn").classList.add("show"), 10000);
+  }
   reset();
 }
 </script>
