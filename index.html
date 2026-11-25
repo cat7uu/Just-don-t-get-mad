@@ -2,337 +2,269 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Just Don't Get Mad</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chicago weather</title>
 <style>
+  :root {
+    --paper: #f6f4ef;
+    --ink: #1a1a1a;
+    --muted: #6b6760;
+    --rule: #d6d2c8;
+    --blue: #3a9fd0;   /* Chicago flag stripe */
+    --red: #c8102e;    /* Chicago flag star */
+  }
   * { box-sizing: border-box; }
+  html { background: var(--paper); color: var(--ink); }
   body {
-    margin: 0;
-    font-family: "Trebuchet MS", Arial, sans-serif;
-    background: linear-gradient(#8fd3ff, #e8f7ff);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #222;
+    margin: 0 auto;
+    max-width: 44rem;
+    padding: 2.5rem 1.25rem 4rem;
+    font: 17px/1.5 Georgia, "Times New Roman", serif;
+    font-variant-numeric: tabular-nums;
   }
-  h1 { margin: 16px 0 4px; font-size: 2rem; text-shadow: 2px 2px #fff; }
-  .sub { margin: 0 0 12px; color: #444; }
+  .sans { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
 
-  /* Mood meter */
-  .meter-wrap { width: min(90vw, 520px); }
-  .meter-label { display: flex; justify-content: space-between; font-weight: bold; }
-  .meter {
-    height: 26px; border: 3px solid #222; border-radius: 14px;
-    background: #fff; overflow: hidden;
+  header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: .4rem;
   }
-  .meter-fill {
-    height: 100%; width: 50%;
-    background: linear-gradient(90deg, #ff4d4d, #ffd84d, #4dd96b);
-    background-size: 520px 100%;
-    transition: width .4s;
-  }
+  header h1 { margin: 0; font-size: 1.15rem; letter-spacing: .02em; }
+  header h1 span { color: var(--red); }
+  header p { margin: 0; font-size: .8rem; color: var(--muted); }
 
-  /* Stage */
-  .stage {
-    position: relative;
-    width: min(90vw, 520px); height: 280px;
-    margin: 14px 0;
-    background: #fff8e6; border: 3px solid #222; border-radius: 16px;
-    overflow: hidden;
+  .now {
+    display: grid; grid-template-columns: auto 1fr; gap: 0 1.5rem;
+    align-items: end;
+    padding: 1.75rem 0 1.25rem;
+    border-bottom: 1px solid var(--rule);
   }
-  .face {
-    position: absolute; left: 50%; bottom: 20px;
-    transform: translateX(-50%);
-    font-size: 96px; transition: transform .3s;
-  }
-  .face.spin { animation: spin 1s linear 2; }
-  @keyframes spin { to { transform: translateX(-50%) rotate(360deg); } }
-  .face.shake { animation: shake .5s; }
-  @keyframes shake {
-    0%,100% { transform: translateX(-50%); }
-    25% { transform: translateX(-60%); }
-    75% { transform: translateX(-40%); }
-  }
-  .face.bounce { animation: bounce .6s; }
-  @keyframes bounce {
-    0%,100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(-40px); }
-  }
-  .projectile {
-    position: absolute; left: 50%; top: -60px;
-    transform: translateX(-50%);
-    font-size: 54px;
-  }
-  .boom {
-    position: absolute; left: 50%; top: 50%;
-    transform: translate(-50%, -50%) scale(.2);
-    font-size: 120px; opacity: 0;
-    animation: boom .9s forwards;
-    pointer-events: none;
-  }
-  @keyframes boom {
-    40% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
-  }
-  .message {
-    position: absolute; top: 10px; left: 0; right: 0;
-    text-align: center; font-weight: bold; font-size: 1.15rem;
-    padding: 0 10px;
-  }
-  .warning { color: #c00; }
+  .temp { font-size: 6.5rem; line-height: .85; font-weight: normal; margin: 0; }
+  .temp sup { font-size: .35em; vertical-align: top; position: relative; top: .25em; }
+  .cond { font-size: 1.6rem; margin: 0 0 .3rem; }
+  .facts { margin: 0; font-size: .85rem; color: var(--muted); }
+  .facts b { color: var(--ink); font-weight: 600; }
 
-  /* Buttons */
-  .controls { display: flex; gap: 30px; align-items: center; }
-  .big {
-    width: 130px; height: 130px; border-radius: 50%;
-    border: 5px solid #222; font-size: 1.4rem; font-weight: bold;
-    color: #fff; cursor: pointer; text-shadow: 1px 1px 2px #000;
-    box-shadow: 0 8px #222; transition: transform .05s, box-shadow .05s;
-  }
-  .big:active { transform: translateY(6px); box-shadow: 0 2px #222; }
-  .red { background: radial-gradient(circle at 35% 35%, #ff7a7a, #d10000); }
-  .green { background: radial-gradient(circle at 35% 35%, #7dff9a, #0a9a2c); }
-  .big:disabled { filter: grayscale(.8); cursor: not-allowed; }
-
-  .lookup {
-    margin-top: 22px; padding: 10px 22px;
-    font-size: 1.1rem; font-weight: bold;
-    border: 3px solid #222; border-radius: 12px;
-    background: #ffe066; cursor: pointer;
+  .summary {
+    font-size: 1.2rem; margin: 1.25rem 0 0; padding-left: .9rem;
+    border-left: 3px solid var(--blue);
   }
 
-  /* Action list panel */
-  .panel {
-    display: none;
-    width: min(90vw, 520px);
-    margin: 14px 0 30px;
-    background: #fff; border: 3px solid #222; border-radius: 16px;
-    padding: 12px 16px;
+  h2 {
+    font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+    margin: 2.5rem 0 .6rem; padding-bottom: .3rem;
+    border-bottom: 1px solid var(--rule);
   }
-  .panel.open { display: block; }
-  .panel h3 { margin: 8px 0; }
-  .panel ul { list-style: none; padding: 0; margin: 0 0 10px; }
-  .panel li {
-    margin: 6px 0; padding: 8px 10px; border-radius: 10px;
-    cursor: pointer; display: flex; justify-content: space-between;
-  }
-  .panel .redlist li { background: #ffe0e0; }
-  .panel .greenlist li { background: #e0ffe6; }
-  .panel li:hover { outline: 2px solid #222; }
-  .hint { font-size: .85rem; color: #555; }
 
-  .over {
-    position: fixed; inset: 0; background: rgba(0,0,0,.6);
-    display: none; align-items: center; justify-content: center;
+  /* hourly */
+  .hours {
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    font-size: .8rem; text-align: center;
   }
-  .over.show { display: flex; }
-  .over .box {
-    background: #fff; border: 4px solid #222; border-radius: 20px;
-    padding: 24px 30px; text-align: center; max-width: 90vw;
-  }
-  .over button {
-    margin-top: 10px; padding: 10px 22px; font-size: 1.1rem;
-    border-radius: 12px; border: 3px solid #222; background: #8fd3ff; cursor: pointer;
+  .hours div { padding: .35rem 0; }
+  .hours .t { font-size: 1rem; }
+  .hours .h, .hours .p { color: var(--muted); }
+  .hours .p.wet { color: var(--blue); font-weight: 600; }
+  svg.narrow { display: none; }
+  svg.line { display: block; width: 100%; height: 48px; margin: .25rem 0; overflow: visible; }
+
+  /* daily */
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td { padding: .6rem 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+  td.day { width: 4.5rem; font-weight: 600; }
+  td.what { color: var(--muted); font-size: .85rem; }
+  td.rain { width: 3.2rem; text-align: right; font-size: .8rem; color: var(--blue); }
+  td.lo, td.hi { width: 2.4rem; text-align: right; }
+  td.lo { color: var(--muted); }
+  td.bar { width: 30%; padding: 0 .7rem; }
+  .track { position: relative; height: 4px; background: var(--rule); border-radius: 2px; }
+  .range { position: absolute; top: 0; bottom: 0; background: var(--ink); border-radius: 2px; }
+
+  .note { font-size: .8rem; color: var(--muted); margin-top: 3rem; }
+  .note a { color: inherit; }
+  .error { color: var(--red); }
+
+  @media (max-width: 520px) {
+    body { font-size: 16px; padding-top: 1.5rem; }
+    .now { grid-template-columns: 1fr; }
+    .temp { font-size: 5rem; margin-bottom: .6rem; }
+    .hours { grid-template-columns: repeat(6, 1fr); }
+    .hours .later, svg.wide { display: none; }
+    svg.narrow { display: block; }
+    header { flex-direction: column; gap: .2rem; }
+    td.what { display: none; }
+    td.bar { width: auto; }
   }
 </style>
 </head>
 <body>
-  <h1>Just Don't Get Mad</h1>
-  <p class="sub">🔴 Red = SHOOT &nbsp; | &nbsp; 🟢 Green = STOP</p>
 
-  <div class="meter-wrap">
-    <div class="meter-label"><span>😡 Mad</span><span id="moodText">Mood: 50</span><span>😄 Happy</span></div>
-    <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
-  </div>
+<header>
+  <h1>Chicago <span>&#10038;</span> weather</h1>
+  <p class="sans" id="stamp">Loading…</p>
+</header>
 
-  <div class="stage" id="stage">
-    <div class="message" id="message">Press a button to start!</div>
-    <div class="face" id="face">🙂</div>
-  </div>
+<main id="app">
+  <p class="facts" style="padding:2rem 0">Getting the forecast…</p>
+</main>
 
-  <div class="controls">
-    <button class="big red" id="redBtn">SHOOT</button>
-    <button class="big green" id="greenBtn">STOP</button>
-  </div>
-
-  <button class="lookup" id="lookupBtn">🔍 Look Up Actions</button>
-
-  <div class="panel" id="panel">
-    <h3>🔴 Red Button (Shoot)</h3>
-    <ul class="redlist" id="redList"></ul>
-    <h3>🟢 Green Button (Stop)</h3>
-    <ul class="greenlist" id="greenList"></ul>
-    <p class="hint">Tap an action to do it. The big buttons pick one at random.
-      If a weapon is falling, the green button always shoots it down!</p>
-  </div>
-
-  <div class="over" id="over">
-    <div class="box">
-      <h2 id="overTitle"></h2>
-      <p id="overText"></p>
-      <button id="restartBtn">Play Again</button>
-    </div>
-  </div>
+<p class="note sans">
+  Forecast from <a href="https://open-meteo.com/">Open-Meteo</a> for the Loop (41.88°N, 87.63°W).
+  Refreshes every 15 minutes while this page is open.
+</p>
 
 <script>
-  const RED_ACTIONS = [
-    { name: "Nuclear Bomb",            icon: "☢️", mood: -30, weapon: true,  text: "A nuclear bomb is falling! STOP it!" },
-    { name: "Chemical Weapon",         icon: "🧪", mood: -25, weapon: true,  text: "A chemical weapon is falling! STOP it!" },
-    { name: "Spin",                    icon: "🌀", mood: -5,  anim: "spin",  text: "Wheee! You're dizzy..." },
-    { name: "Dissect",                 icon: "🔪", mood: -15, anim: "shake", text: "Ew! You dissected a frog. Gross!" },
-    { name: "Do Not Go to the Dentist",icon: "🦷", mood: -10, anim: "shake", text: "You skipped the dentist. Ouch, toothache!" },
-  ];
-  const GREEN_ACTIONS = [
-    { name: "Shoot Down Weapon",  icon: "🎯", mood: 10, shootDown: true, text: "Pew pew! Nothing to shoot down... but good aim!" },
-    { name: "Go to the Dentist",  icon: "🪥", mood: 10, anim: "bounce", text: "Sparkly clean teeth! ✨" },
-    { name: "Go to the Doctor",   icon: "🩺", mood: 10, anim: "bounce", text: "The doctor says you're healthy!" },
-    { name: "Be Happy",           icon: "😄", mood: 15, anim: "bounce", text: "You chose to be happy! 🎉" },
-  ];
+const URL_ =
+  "https://api.open-meteo.com/v1/forecast?latitude=41.8781&longitude=-87.6298" +
+  "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,is_day" +
+  "&hourly=temperature_2m,precipitation_probability,weather_code" +
+  "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset" +
+  "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=7";
 
-  const $ = id => document.getElementById(id);
-  const stage = $("stage"), face = $("face"), message = $("message");
-  let mood, incoming;
+// WMO weather codes, in words a person would use.
+const WORDS = {
+  0: "Clear", 1: "Mostly clear", 2: "Partly cloudy", 3: "Overcast",
+  45: "Fog", 48: "Freezing fog",
+  51: "Light drizzle", 53: "Drizzle", 55: "Heavy drizzle",
+  56: "Freezing drizzle", 57: "Freezing drizzle",
+  61: "Light rain", 63: "Rain", 65: "Heavy rain",
+  66: "Freezing rain", 67: "Freezing rain",
+  71: "Light snow", 73: "Snow", 75: "Heavy snow", 77: "Snow grains",
+  80: "Showers", 81: "Showers", 82: "Downpours",
+  85: "Snow showers", 86: "Heavy snow showers",
+  95: "Thunderstorms", 96: "Thunderstorms, hail", 99: "Thunderstorms, hail"
+};
+const words = c => WORDS[c] ?? "—";
+const isSnow = c => [71,73,75,77,85,86].includes(c);
+const isWet = c => c >= 51;
 
-  function faceFor(m) {
-    if (m >= 85) return "😄";
-    if (m >= 60) return "🙂";
-    if (m >= 40) return "😐";
-    if (m >= 20) return "😠";
-    return "😡";
+const COMPASS = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const compass = deg => COMPASS[Math.round(deg / 22.5) % 16];
+
+const r = Math.round;
+const hourLabel = d => {
+  const h = d.getHours();
+  return h === 0 ? "12a" : h === 12 ? "12p" : h < 12 ? h + "a" : (h - 12) + "p";
+};
+const timeLabel = d => d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }).toLowerCase();
+// Open-Meteo returns local wall-clock strings ("2026-11-25T14:00"); parse as-is.
+const parse = s => new Date(s);
+
+function summarize(data, startIdx) {
+  const d = data.daily;
+  const hi = r(d.temperature_2m_max[0]), lo = r(d.temperature_2m_min[0]);
+  const parts = [`High ${hi}°, low ${lo}°.`];
+
+  // Find the first hour in the next 18 with a real chance of precipitation.
+  const h = data.hourly;
+  let wetAt = -1;
+  for (let i = startIdx; i < Math.min(startIdx + 18, h.time.length); i++) {
+    if (h.precipitation_probability[i] >= 50) { wetAt = i; break; }
+  }
+  if (wetAt === startIdx) {
+    parts.push(isSnow(h.weather_code[wetAt]) ? "Snow now." : "Wet out there right now.");
+  } else if (wetAt > 0) {
+    const kind = isSnow(h.weather_code[wetAt]) ? "Snow" : "Rain";
+    parts.push(`${kind} likely around ${timeLabel(parse(h.time[wetAt])).replace(":00", "").replace(" ", "&nbsp;")}.`);
+  } else {
+    parts.push("Dry for the rest of the day.");
   }
 
-  function setMood(delta) {
-    mood = Math.max(0, Math.min(100, mood + delta));
-    $("meterFill").style.width = mood + "%";
-    $("moodText").textContent = "Mood: " + mood;
-    face.textContent = faceFor(mood);
-    if (mood <= 0) endGame(false);
-    else if (mood >= 100) endGame(true);
+  const feels = data.current.apparent_temperature, gust = data.current.wind_gusts_10m;
+  if (feels <= 20) parts.push("Wear the real coat.");
+  else if (gust >= 30) parts.push(`Gusts to ${r(gust)} mph — hold onto your hat.`);
+  else if (hi >= 88) parts.push("Hot. Drink water.");
+  return parts.join(" ");
+}
+
+function render(data) {
+  const c = data.current, h = data.hourly, d = data.daily;
+  const now = parse(c.time);
+
+  let start = h.time.findIndex(t => parse(t) >= new Date(now.getTime() - 30 * 60e3));
+  if (start < 0) start = 0;
+  const idx = [...Array(12).keys()].map(k => start + k).filter(i => i < h.time.length);
+
+  // Hourly temperature line
+  const temps = idx.map(i => h.temperature_2m[i]);
+  const tMin = Math.min(...temps), tMax = Math.max(...temps), span = Math.max(tMax - tMin, 4);
+  const pts = n => temps.slice(0, n).map((t, k) => {
+    const x = (k + .5) / n * 100;
+    const y = 44 - (t - tMin) / span * 40;
+    return `${x.toFixed(2)},${y.toFixed(1)}`;
+  }).join(" ");
+  const line = (cls, n) => `<svg class="line ${cls}" viewBox="0 0 100 48" preserveAspectRatio="none" aria-hidden="true">
+      <polyline points="${pts(n)}" fill="none" stroke="#1a1a1a" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    </svg>`;
+
+  // Week range bars
+  const wkMin = Math.min(...d.temperature_2m_min), wkMax = Math.max(...d.temperature_2m_max);
+  const wkSpan = Math.max(wkMax - wkMin, 1);
+
+  const rows = d.time.map((t, i) => {
+    const day = i === 0 ? "Today" : parse(t + "T12:00").toLocaleDateString("en-US", { weekday: "short" });
+    const lo = d.temperature_2m_min[i], hi = d.temperature_2m_max[i];
+    const left = (lo - wkMin) / wkSpan * 100, width = (hi - lo) / wkSpan * 100;
+    const p = d.precipitation_probability_max[i];
+    return `<tr>
+      <td class="day">${day}</td>
+      <td class="what">${words(d.weather_code[i])}</td>
+      <td class="rain sans">${p >= 20 ? p + "%" : ""}</td>
+      <td class="lo">${r(lo)}°</td>
+      <td class="bar"><div class="track"><div class="range" style="left:${left}%;width:${Math.max(width, 2)}%"></div></div></td>
+      <td class="hi">${r(hi)}°</td>
+    </tr>`;
+  }).join("");
+
+  const cell = (cls, fn) => idx.map((i, k) => `<div class="${cls}${k >= 6 ? " later" : ""}">${fn(i)}</div>`).join("");
+
+  document.getElementById("app").innerHTML = `
+    <section class="now">
+      <p class="temp">${r(c.temperature_2m)}<sup>°F</sup></p>
+      <div>
+        <p class="cond">${words(c.weather_code)}</p>
+        <p class="facts sans">
+          Feels like <b>${r(c.apparent_temperature)}°</b><br>
+          Wind <b>${compass(c.wind_direction_10m)} ${r(c.wind_speed_10m)} mph</b>${c.wind_gusts_10m >= c.wind_speed_10m + 8 ? `, gusts ${r(c.wind_gusts_10m)}` : ""}<br>
+          Humidity <b>${c.relative_humidity_2m}%</b> · Sun ${timeLabel(parse(d.sunrise[0]))}–${timeLabel(parse(d.sunset[0]))}
+        </p>
+      </div>
+    </section>
+    <p class="summary">${summarize(data, start)}</p>
+
+    <h2 class="sans">Next 12 hours</h2>
+    <div class="hours sans">${cell("t", i => r(h.temperature_2m[i]) + "°")}</div>
+    ${line("wide", idx.length)}${line("narrow", Math.min(6, idx.length))}
+    <div class="hours sans">${cell("p" , i => {
+      const p = h.precipitation_probability[i];
+      return `<span class="p${p >= 40 ? " wet" : ""}">${p}%</span>`;
+    })}</div>
+    <div class="hours sans">${cell("h", i => k0(i) ? "Now" : hourLabel(parse(h.time[i])))}</div>
+
+    <h2 class="sans">Seven days</h2>
+    <table>${rows}</table>
+  `;
+  function k0(i) { return i === start; }
+
+  document.getElementById("stamp").textContent =
+    now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }) +
+    " · updated " + timeLabel(new Date());
+}
+
+async function load() {
+  try {
+    const res = await fetch(URL_);
+    if (!res.ok) throw new Error(res.status);
+    render(await res.json());
+  } catch (e) {
+    document.getElementById("app").innerHTML =
+      `<p class="facts error" style="padding:2rem 0">Couldn't reach the forecast service. Try reloading in a minute.</p>`;
+    document.getElementById("stamp").textContent = "Offline";
   }
-
-  function say(text, warn) {
-    message.textContent = text;
-    message.className = "message" + (warn ? " warning" : "");
-  }
-
-  function animate(name) {
-    if (!name) return;
-    face.classList.remove("spin", "shake", "bounce");
-    void face.offsetWidth; // restart animation
-    face.classList.add(name);
-  }
-
-  function boom(icon) {
-    const b = document.createElement("div");
-    b.className = "boom";
-    b.textContent = icon;
-    stage.appendChild(b);
-    setTimeout(() => b.remove(), 900);
-  }
-
-  // Weapons fall from the sky; you have 3 seconds to press STOP.
-  function launchWeapon(action) {
-    const p = document.createElement("div");
-    p.className = "projectile";
-    p.textContent = action.icon;
-    stage.appendChild(p);
-    const duration = 3000, start = performance.now();
-    const height = stage.clientHeight - 150;
-    incoming = { action, el: p, raf: 0 };
-    const step = now => {
-      if (!incoming || incoming.el !== p) return;
-      const t = (now - start) / duration;
-      p.style.top = (-60 + t * height) + "px";
-      if (t >= 1) {
-        p.remove();
-        incoming = null;
-        boom("💥");
-        animate("shake");
-        say(action.name + " hit! You're getting MAD!", true);
-        setMood(action.mood);
-      } else {
-        incoming.raf = requestAnimationFrame(step);
-      }
-    };
-    incoming.raf = requestAnimationFrame(step);
-  }
-
-  function doRed(action) {
-    if (mood <= 0 || mood >= 100) return;
-    if (action.weapon) {
-      if (incoming) { say("A weapon is already falling! Press STOP!", true); return; }
-      say(action.text, true);
-      launchWeapon(action);
-    } else {
-      say(action.icon + " " + action.text);
-      animate(action.anim);
-      setMood(action.mood);
-    }
-  }
-
-  function doGreen(action) {
-    if (mood <= 0 || mood >= 100) return;
-    if (action.shootDown && incoming) {
-      cancelAnimationFrame(incoming.raf);
-      const el = incoming.el, name = incoming.action.name;
-      incoming = null;
-      el.textContent = "💥";
-      setTimeout(() => el.remove(), 400);
-      say("🎯 You shot down the " + name + "! Phew!");
-      animate("bounce");
-      setMood(20);
-      return;
-    }
-    say(action.icon + " " + action.text);
-    animate(action.anim);
-    setMood(action.mood);
-  }
-
-  const random = list => list[Math.floor(Math.random() * list.length)];
-
-  $("redBtn").onclick = () => doRed(random(RED_ACTIONS));
-  $("greenBtn").onclick = () => {
-    // If a weapon is falling, STOP always shoots it down.
-    doGreen(incoming ? GREEN_ACTIONS[0] : random(GREEN_ACTIONS));
-  };
-
-  $("lookupBtn").onclick = () => {
-    const open = $("panel").classList.toggle("open");
-    $("lookupBtn").textContent = open ? "🔼 Hide Actions" : "🔍 Look Up Actions";
-  };
-
-  function fillList(ul, actions, handler) {
-    actions.forEach(a => {
-      const li = document.createElement("li");
-      const sign = a.mood > 0 ? "+" : "";
-      li.innerHTML = `<span>${a.icon} ${a.name}</span><span>${sign}${a.mood}</span>`;
-      li.onclick = () => handler(a);
-      ul.appendChild(li);
-    });
-  }
-  fillList($("redList"), RED_ACTIONS, doRed);
-  fillList($("greenList"), GREEN_ACTIONS, doGreen);
-
-  function endGame(won) {
-    if (incoming) { cancelAnimationFrame(incoming.raf); incoming.el.remove(); incoming = null; }
-    $("overTitle").textContent = won ? "😄 You Win!" : "😡 You Got Mad!";
-    $("overText").textContent = won
-      ? "You stayed calm and happy. Great job!"
-      : "Your mood hit zero. Remember: just don't get mad!";
-    $("over").classList.add("show");
-  }
-
-  function reset() {
-    mood = 50;
-    incoming = null;
-    $("over").classList.remove("show");
-    stage.querySelectorAll(".projectile, .boom").forEach(e => e.remove());
-    say("Press a button to start!");
-    setMood(0);
-  }
-  $("restartBtn").onclick = reset;
-  reset();
+}
+load();
+setInterval(load, 15 * 60e3);
 </script>
 </body>
 </html>
