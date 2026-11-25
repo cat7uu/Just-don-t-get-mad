@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chicago weather</title>
+<style>
+  :root {
+    --paper: #f6f4ef;
+    --ink: #1a1a1a;
+    --muted: #6b6760;
+    --rule: #d6d2c8;
+    --blue: #3a9fd0;   /* Chicago flag stripe */
+    --red: #c8102e;    /* Chicago flag star */
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--paper); color: var(--ink); }
+  body {
+    margin: 0 auto;
+    max-width: 44rem;
+    padding: 2.5rem 1.25rem 4rem;
+    font: 17px/1.5 Georgia, "Times New Roman", serif;
+    font-variant-numeric: tabular-nums;
+  }
+  .sans { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+
+  header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: .4rem;
+  }
+  header h1 { margin: 0; font-size: 1.15rem; letter-spacing: .02em; }
+  header h1 span { color: var(--red); }
+  header p { margin: 0; font-size: .8rem; color: var(--muted); }
+
+  .now {
+    display: grid; grid-template-columns: auto 1fr; gap: 0 1.5rem;
+    align-items: end;
+    padding: 1.75rem 0 1.25rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .temp { font-size: 6.5rem; line-height: .85; font-weight: normal; margin: 0; }
+  .temp sup { font-size: .35em; vertical-align: top; position: relative; top: .25em; }
+  .cond { font-size: 1.6rem; margin: 0 0 .3rem; }
+  .facts { margin: 0; font-size: .85rem; color: var(--muted); }
+  .facts b { color: var(--ink); font-weight: 600; }
+
+  .summary {
+    font-size: 1.2rem; margin: 1.25rem 0 0; padding-left: .9rem;
+    border-left: 3px solid var(--blue);
+  }
+
+  h2 {
+    font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+    margin: 2.5rem 0 .6rem; padding-bottom: .3rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* hourly */
+  .hours {
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    font-size: .8rem; text-align: center;
+  }
+  .hours div { padding: .35rem 0; }
+  .hours .t { font-size: 1rem; }
+  .hours .h, .hours .p { color: var(--muted); }
+  .hours .p.wet { color: var(--blue); font-weight: 600; }
+  svg.narrow { display: none; }
+  svg.line { display: block; width: 100%; height: 48px; margin: .25rem 0; overflow: visible; }
+
+  /* daily */
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  td { padding: .6rem 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+  td.day { width: 4.5rem; font-weight: 600; }
+  td.what { color: var(--muted); font-size: .85rem; }
+  td.rain { width: 3.2rem; text-align: right; font-size: .8rem; color: var(--blue); }
+  td.lo, td.hi { width: 2.4rem; text-align: right; }
+  td.lo { color: var(--muted); }
+  td.bar { width: 30%; padding: 0 .7rem; }
+  .track { position: relative; height: 4px; background: var(--rule); border-radius: 2px; }
+  .range { position: absolute; top: 0; bottom: 0; background: var(--ink); border-radius: 2px; }
+
+  .note { font-size: .8rem; color: var(--muted); margin-top: 3rem; }
+  .note a { color: inherit; }
+  .error { color: var(--red); }
+
+  @media (max-width: 520px) {
+    body { font-size: 16px; padding-top: 1.5rem; }
+    .now { grid-template-columns: 1fr; }
+    .temp { font-size: 5rem; margin-bottom: .6rem; }
+    .hours { grid-template-columns: repeat(6, 1fr); }
+    .hours .later, svg.wide { display: none; }
+    svg.narrow { display: block; }
+    header { flex-direction: column; gap: .2rem; }
+    td.what { display: none; }
+    td.bar { width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chicago <span>&#10038;</span> weather</h1>
+  <p class="sans" id="stamp">Loading…</p>
+</header>
+
+<main id="app">
+  <p class="facts" style="padding:2rem 0">Getting the forecast…</p>
+</main>
+
+<p class="note sans">
+  Forecast from <a href="https://open-meteo.com/">Open-Meteo</a> for the Loop (41.88°N, 87.63°W).
+  Refreshes every 15 minutes while this page is open.
+</p>
+
+<script>
+const URL_ =
+  "https://api.open-meteo.com/v1/forecast?latitude=41.8781&longitude=-87.6298" +
+  "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,is_day" +
+  "&hourly=temperature_2m,precipitation_probability,weather_code" +
+  "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset" +
+  "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=7";
+
+// WMO weather codes, in words a person would use.
+const WORDS = {
+  0: "Clear", 1: "Mostly clear", 2: "Partly cloudy", 3: "Overcast",
+  45: "Fog", 48: "Freezing fog",
+  51: "Light drizzle", 53: "Drizzle", 55: "Heavy drizzle",
+  56: "Freezing drizzle", 57: "Freezing drizzle",
+  61: "Light rain", 63: "Rain", 65: "Heavy rain",
+  66: "Freezing rain", 67: "Freezing rain",
+  71: "Light snow", 73: "Snow", 75: "Heavy snow", 77: "Snow grains",
+  80: "Showers", 81: "Showers", 82: "Downpours",
+  85: "Snow showers", 86: "Heavy snow showers",
+  95: "Thunderstorms", 96: "Thunderstorms, hail", 99: "Thunderstorms, hail"
+};
+const words = c => WORDS[c] ?? "—";
+const isSnow = c => [71,73,75,77,85,86].includes(c);
+const isWet = c => c >= 51;
+
+const COMPASS = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const compass = deg => COMPASS[Math.round(deg / 22.5) % 16];
+
+const r = Math.round;
+const hourLabel = d => {
+  const h = d.getHours();
+  return h === 0 ? "12a" : h === 12 ? "12p" : h < 12 ? h + "a" : (h - 12) + "p";
+};
+const timeLabel = d => d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }).toLowerCase();
+// Open-Meteo returns local wall-clock strings ("2026-11-25T14:00"); parse as-is.
+const parse = s => new Date(s);
+
+function summarize(data, startIdx) {
+  const d = data.daily;
+  const hi = r(d.temperature_2m_max[0]), lo = r(d.temperature_2m_min[0]);
+  const parts = [`High ${hi}°, low ${lo}°.`];
+
+  // Find the first hour in the next 18 with a real chance of precipitation.
+  const h = data.hourly;
+  let wetAt = -1;
+  for (let i = startIdx; i < Math.min(startIdx + 18, h.time.length); i++) {
+    if (h.precipitation_probability[i] >= 50) { wetAt = i; break; }
+  }
+  if (wetAt === startIdx) {
+    parts.push(isSnow(h.weather_code[wetAt]) ? "Snow now." : "Wet out there right now.");
+  } else if (wetAt > 0) {
+    const kind = isSnow(h.weather_code[wetAt]) ? "Snow" : "Rain";
+    parts.push(`${kind} likely around ${timeLabel(parse(h.time[wetAt])).replace(":00", "").replace(" ", "&nbsp;")}.`);
+  } else {
+    parts.push("Dry for the rest of the day.");
+  }
+
+  const feels = data.current.apparent_temperature, gust = data.current.wind_gusts_10m;
+  if (feels <= 20) parts.push("Wear the real coat.");
+  else if (gust >= 30) parts.push(`Gusts to ${r(gust)} mph — hold onto your hat.`);
+  else if (hi >= 88) parts.push("Hot. Drink water.");
+  return parts.join(" ");
+}
+
+function render(data) {
+  const c = data.current, h = data.hourly, d = data.daily;
+  const now = parse(c.time);
+
+  let start = h.time.findIndex(t => parse(t) >= new Date(now.getTime() - 30 * 60e3));
+  if (start < 0) start = 0;
+  const idx = [...Array(12).keys()].map(k => start + k).filter(i => i < h.time.length);
+
+  // Hourly temperature line
+  const temps = idx.map(i => h.temperature_2m[i]);
+  const tMin = Math.min(...temps), tMax = Math.max(...temps), span = Math.max(tMax - tMin, 4);
+  const pts = n => temps.slice(0, n).map((t, k) => {
+    const x = (k + .5) / n * 100;
+    const y = 44 - (t - tMin) / span * 40;
+    return `${x.toFixed(2)},${y.toFixed(1)}`;
+  }).join(" ");
+  const line = (cls, n) => `<svg class="line ${cls}" viewBox="0 0 100 48" preserveAspectRatio="none" aria-hidden="true">
+      <polyline points="${pts(n)}" fill="none" stroke="#1a1a1a" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    </svg>`;
+
+  // Week range bars
+  const wkMin = Math.min(...d.temperature_2m_min), wkMax = Math.max(...d.temperature_2m_max);
+  const wkSpan = Math.max(wkMax - wkMin, 1);
+
+  const rows = d.time.map((t, i) => {
+    const day = i === 0 ? "Today" : parse(t + "T12:00").toLocaleDateString("en-US", { weekday: "short" });
+    const lo = d.temperature_2m_min[i], hi = d.temperature_2m_max[i];
+    const left = (lo - wkMin) / wkSpan * 100, width = (hi - lo) / wkSpan * 100;
+    const p = d.precipitation_probability_max[i];
+    return `<tr>
+      <td class="day">${day}</td>
+      <td class="what">${words(d.weather_code[i])}</td>
+      <td class="rain sans">${p >= 20 ? p + "%" : ""}</td>
+      <td class="lo">${r(lo)}°</td>
+      <td class="bar"><div class="track"><div class="range" style="left:${left}%;width:${Math.max(width, 2)}%"></div></div></td>
+      <td class="hi">${r(hi)}°</td>
+    </tr>`;
+  }).join("");
+
+  const cell = (cls, fn) => idx.map((i, k) => `<div class="${cls}${k >= 6 ? " later" : ""}">${fn(i)}</div>`).join("");
+
+  document.getElementById("app").innerHTML = `
+    <section class="now">
+      <p class="temp">${r(c.temperature_2m)}<sup>°F</sup></p>
+      <div>
+        <p class="cond">${words(c.weather_code)}</p>
+        <p class="facts sans">
+          Feels like <b>${r(c.apparent_temperature)}°</b><br>
+          Wind <b>${compass(c.wind_direction_10m)} ${r(c.wind_speed_10m)} mph</b>${c.wind_gusts_10m >= c.wind_speed_10m + 8 ? `, gusts ${r(c.wind_gusts_10m)}` : ""}<br>
+          Humidity <b>${c.relative_humidity_2m}%</b> · Sun ${timeLabel(parse(d.sunrise[0]))}–${timeLabel(parse(d.sunset[0]))}
+        </p>
+      </div>
+    </section>
+    <p class="summary">${summarize(data, start)}</p>
+
+    <h2 class="sans">Next 12 hours</h2>
+    <div class="hours sans">${cell("t", i => r(h.temperature_2m[i]) + "°")}</div>
+    ${line("wide", idx.length)}${line("narrow", Math.min(6, idx.length))}
+    <div class="hours sans">${cell("p" , i => {
+      const p = h.precipitation_probability[i];
+      return `<span class="p${p >= 40 ? " wet" : ""}">${p}%</span>`;
+    })}</div>
+    <div class="hours sans">${cell("h", i => k0(i) ? "Now" : hourLabel(parse(h.time[i])))}</div>
+
+    <h2 class="sans">Seven days</h2>
+    <table>${rows}</table>
+  `;
+  function k0(i) { return i === start; }
+
+  document.getElementById("stamp").textContent =
+    now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }) +
+    " · updated " + timeLabel(new Date());
+}
+
+async function load() {
+  try {
+    const res = await fetch(URL_);
+    if (!res.ok) throw new Error(res.status);
+    render(await res.json());
+  } catch (e) {
+    document.getElementById("app").innerHTML =
+      `<p class="facts error" style="padding:2rem 0">Couldn't reach the forecast service. Try reloading in a minute.</p>`;
+    document.getElementById("stamp").textContent = "Offline";
+  }
+}
+load();
+setInterval(load, 15 * 60e3);
+</script>
+</body>
+</html>
